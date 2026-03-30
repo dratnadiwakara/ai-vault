@@ -1,0 +1,220 @@
+---
+description: Standards for R programming, ggplot2 visualization, and reproducible research.
+globs: ["*.R", "*.Rmd", "*.qmd"]
+alwaysApply: true
+---
+
+# R Coding & Visualization Standards
+
+## 1. General Principles
+- **Never render `.qmd` or `.Rmd` files.** Do not run `quarto render`, `rmarkdown::render()`, or equivalent rendering commands on Quarto or R Markdown documents.
+- **Library Management:** Always place `library()` calls at the very top of the script.
+- **Reproducibility:** Include `set.seed()` exactly once at the top of the file if any randomness is involved.
+- **Environment Reset:** For `.R` scripts, the very first line of code must be `rm(list = ls())`. For `.qmd` and `.Rmd` documents, the first statement in the first code chunk must be `rm(list = ls())`.
+- **Pathing:** All file paths MUST be relative to the project root. Never use absolute paths.
+- **Path Construction in `.qmd`/`.Rmd`:** In Quarto (`.qmd`) and R Markdown (`.Rmd`) files, always use the `here` package to construct file paths from the project root (e.g., `here::here("data", "my_file.rds")`) instead of manually writing relative paths like `"../data/my_file.rds"`.
+- **File Naming for New Scripts/Documents:** When creating new `.R`, `.Rmd`, `.qmd`, `.md`, or similar project files, append a date suffix in the form `YYYYMMDD` to the base filename (e.g., `branch_panel_20260304.qmd`).
+- **Documentation:** Use **Roxygen2** style (`#'`) to document every custom function.
+- **Project Hygiene:** Every major computed object should be cached/saved using `saveRDS()`.
+- **Comments:** Focus on the **WHY** (logic/intent) rather than the **WHAT**.
+- **Figure Export Toggle:** Each script that can generate figures must define a single logical flag `save_figures` (e.g., `save_figures <- TRUE`), and all export calls (e.g., `ggsave()`) must only execute when this flag is `TRUE`.
+- **Data Lineage (Crucial):** Whenever a script reads a dataset created by another script in this project (e.g., via `readRDS()` or `load()`), you MUST add a comment immediately above the read command pointing to the source script that generated it.
+    - *Example:* `# Data created by code/sample-construction/create_panel.R`
+    - `dt <- readRDS(paste0(data_path, "final_panel.rds"))`
+
+## 2. Data Management
+- **Primary Storage:** All processed data files used by this project must be stored in the `data/` subfolder at the project root (e.g., `data/my_file.rds`).
+- **Assumed Read Location:** Unless a script explicitly documents a different source location (e.g., for external raw data), you should assume that inputs are read from `data/` and outputs are written back to `data/`.
+- **Path Variable:** Define a base path variable at the start of the script for easy switching: `data_path <- "data/"`.
+ - **Processed File Naming:** When creating and saving processed data files (e.g., `.rds`, `.fst`, `.csv`), generate a date-time suffix once per script run using `dat_suffix <- format(Sys.time(), "%Y%m%d_%H%M%S")` and append it to the base filename before the extension (e.g., `paste0(data_path, "branch_panel_", dat_suffix, ".rds")`).
+
+## 3. Global Color Palette
+Use these variables for all visualization and branding:
+- `primary_blue    <- "#012169"`
+- `primary_gold    <- "#f2a900"`
+- `accent_gray     <- "#525252"`
+- `positive_green  <- "#15803d"`
+- `negative_red    <- "#b91c1c"`
+
+## 4. Data Visualization (ggplot2)
+Always apply the following theme. **Note: Legend titles must be removed.**
+
+```r
+theme_custom <- function(base_size = 14) {
+  theme_minimal(base_size = base_size) +
+    theme(
+      plot.title       = element_text(face = "bold", color = "#012169"),
+      legend.position  = "bottom",
+      legend.title     = element_blank(),
+      plot.background  = element_rect(fill = "transparent", color = NA),
+      panel.background = element_rect(fill = "transparent", color = NA)
+    )
+}
+```
+
+- For `fixest` event-study plots, prefer `ggiplot()` over base `iplot()` so that the same `theme_custom()` and color palette can be applied consistently (e.g., `ggiplot(model) + theme_custom()`). This requires the `ggfixest` package to be loaded (`library(ggfixest)`).
+
+## 5. Export Standards (figures & tables)
+- All rendered outputs (figures and tables) must be written to the `docs/` subfolders of the project so they can be tracked and versioned.
+
+### 5.1 Figures (ggplot2 / `ggsave`)
+
+- All figures generated must be saved in the `docs/figures/` directory (GitHub Pages) and follow the naming convention below.
+- Location: Always write figure output files to `docs/figures/`.
+- Naming: Append a date-time suffix in the form `YYYYMMDD_HHMMSS` (e.g., `filename_20260302_153045.png`). This requirement applies to all figure files created by the project.
+- Format: Always set `bg = "transparent"` and provide explicit `width` and `height` dimensions.
+- Execution: Wrap `ggsave()` (and any other figure export) calls in a check on `save_figures`, e.g., `if (isTRUE(save_figures)) { ... }`.
+
+Standard `ggsave()` template:
+
+```r
+# Logical flag to control whether figures are written to disk
+save_figures <- TRUE
+
+# Generate date-time suffix
+dat_suffix <- format(Sys.time(), "%Y%m%d_%H%M%S")
+
+# Example conditional save
+if (isTRUE(save_figures)) {
+  ggsave(
+    filename = here::here("docs", "figures", paste0("plot_name_", dat_suffix, ".png")),
+    plot = last_plot(),
+    width = 8, 
+    height = 6, 
+    bg = "transparent"
+  )
+}
+```
+
+### 5.2 Tables (LaTeX `.tex`)
+
+- All publication-quality tables (e.g., regression output, summary statistics) must be saved as LaTeX `.tex` files in the `docs/tables/` directory.
+- Location: Always write table output files to `docs/tables/`.
+- Naming: Append a date-time suffix in the form `YYYYMMDD_HHMMSS` (e.g., `table_name_20260302_153045.tex`). This requirement applies to all table files created by the project.
+- Summary statistics tables should, by default, be created using the `summary_stats_function` defined in the shared utilities script at `https://raw.githubusercontent.com/dratnadiwakara/r-utilities/refs/heads/main/summary_stat_tables.R`, imported via `source("https://raw.githubusercontent.com/dratnadiwakara/r-utilities/refs/heads/main/summary_stat_tables.R")`, and the resulting tables must be exported to LaTeX `.tex` files following the same naming, location, and date-suffix conventions as other tables.
+- Global table export toggle: Define a single logical flag `save_tables <- TRUE` in any script or `.qmd` that can export tables. No table should be written unless `save_tables` is `TRUE`.
+- Local per-table toggle: For each individual table, define a local logical indicator (e.g., `export_this_table <- TRUE`) so that specific tables can be skipped even when `save_tables` is `TRUE`.
+- Execution pattern: Wrap each table export call in a combined check on the global and local flags, for example:
+
+```r
+export_this_table <- TRUE # Local toggle for this table
+
+dat_suffix <- format(Sys.time(), "%Y%m%d_%H%M%S")
+
+if (isTRUE(save_tables) && isTRUE(export_this_table)) {
+  writeLines(
+    table_tex,  # character vector containing LaTeX code for the table
+    con = here::here("docs", "tables", paste0("table_name_", dat_suffix, ".tex"))
+  )
+}
+```
+
+- Whether tables or figures are printed/drawn in a `.qmd` before export is a global presentational choice and is **not** enforced by this rule.
+- The global toggles `save_figures` and `save_tables` should be defined once in `code/_common.R` and used via sourcing; they should not be redefined inside individual `.qmd` or `.R` analysis files.
+
+## 6. Econometric Modeling (fixest)
+Always use the `fixest` package for regressions. Use global macros (`setFixest_fml` and `setFixest_etable`) to maintain a clean and consistent model structure across scripts.
+
+- Define shared `covariate_labels_dict`, `setFixest_fml`, and `setFixest_etable` once in a common helper file (e.g., `code/_common.R`) and reuse them across `.R` and `.qmd` analysis files instead of redefining them in each document.
+
+### Macro Structure Template
+Initialize scripts using this order (adjusting the specific variables based on the unit of analysis, this is only an example.):
+
+```r
+library(fixest)
+
+# Template: Adjust geography/controls based on the specific Task
+setFixest_fml(
+  ..fe       = ~ ZIPBR + cbsa_yr,                        # Unit + Time Fixed Effects
+  ..controls = ~ zip_growth_3yr + log1p(branches_zip_lag1), # Standard Controls
+  ..het_vars = ~ sophisticated + factor_age_bin + log_income # Heterogeneity/Interaction terms
+)
+
+# Global Export Formatting 
+setFixest_etable(
+  signif.code = c("***" = 0.01, "**" = 0.05, "*" = 0.1),
+  se.below = TRUE
+)
+```
+
+### 6.1 Table labeling and row ordering (`etable`)
+
+- **Human-readable labels:** Always pass a `dict =` argument to `fixest::etable()` so that row labels are human-readable (e.g., `"log(family_income)"` → `"log(Family Income)"`).
+- **Ordering by labels, not variable names:** When using the `order =` argument in `etable()`, specify the desired row order using the **printed labels**, not the underlying variable names. For example, if the label is `"log(Family Income)"`, the `order` vector should contain `"Family Income"` (the underlying economic quantity) rather than `"log(family_income)"`.
+- **Intercept placement:** Ensure the intercept row is labeled `"Constant"` (via `dict = c(covariate_labels, "(Intercept)" = "Constant")`) and appears **last** in the table by including `"Constant"` as the final entry in the `order` vector.
+- **Consistency across outputs:** Use the **same label-based `order` vector** for both on-screen (`html`) and LaTeX (`tex = TRUE`) versions of the table so row ordering is identical in all exported outputs.
+
+## 7. Script Organization & Quarto Analysis
+
+### 7.1 Script locations
+
+- **Sample construction scripts (`.R`):**
+  - All sample construction and data preparation scripts must live in `code/sample-construction/`.
+  - These scripts must be plain R scripts with the `.R` extension.
+  - Their primary responsibilities are to read raw or external data, perform cleaning and sample construction, and write processed outputs into the `data/` folder (following the Data Management rules above).
+
+- **Analysis scripts (`.qmd`):**
+  - All empirical analysis and result-generation scripts must live in `code/result-generation/`.
+  - These scripts must be Quarto documents with the `.qmd` extension.
+  - `.qmd` files in `code/result-generation/` are the canonical entry points for running analyses and producing tables and figures.
+
+### 7.2 Structure of `.qmd` analysis files
+
+- **Document type:**
+  - All `.qmd` analysis files must use `type: source` in the document front matter (not `type: notebook`).
+
+- **Task-per-chunk structure:**
+  - Each logically distinct task (e.g., loading data, computing summary statistics, estimating regressions, generating a specific figure or table) should be placed in its own code chunk.
+  - Large monolithic chunks should be split into smaller, clearly labeled chunks to improve reproducibility, readability, and debugging.
+
+- **Narrative vs. code:**
+  - Each figure or table should be preceded by a heading and a journal-style description (one or two paragraphs) that states what the exhibit presents, the sample and unit of observation, the dependent variable (LHS), key right-hand side variables (RHS), and what each column or column group represents. Do not interpret coefficients or findings in these descriptions; keep them descriptive only.
+  - Each other important chunk should be preceded by a short sentence or heading describing its purpose (e.g., "Estimate baseline regressions" or "Construct event-study plot").
+  - Inside code chunks, comments should still be used sparingly to explain non-obvious implementation details, assumptions, or tricky logic, consistent with the guideline to comment the **WHY**, not the **WHAT**.
+
+### 7.3 Execution options and output cleanliness
+
+- **Suppress warnings and messages by default:**
+  - All `.qmd` analysis files must suppress warnings and messages by default by setting `warning: false` and `message: false` in the document-level `execute:` block in the front matter.
+  - Chunk-level overrides are allowed when a specific warning or message is genuinely informative and should appear in the rendered document.
+
+- **Example minimal front matter for analysis files:**
+
+```yaml
+---
+title: "Analysis Title"
+format: html
+type: source
+execute:
+  warning: false
+  message: false
+---
+```
+
+## 8. Results Storage & Model Management
+To ensure models are easily exportable to tables, follow this list-based storage pattern:
+
+- **Initialization:** Always start the analysis section with `r <- list()`.
+- **Naming:** Use descriptive keys for the list (e.g., `"Joint"`, `"Pre 2012"`, `"Het Post 2012"`).
+- **Interaction Syntax:** Use the shorthand `formula = y ~ var1*(..het_vars)` for heterogeneity analysis to maintain consistency.
+- **VCOV:** Default to clustering at the unit level (e.g., `vcov = ~ZIPBR` or `vcov = ~RSSDID`) as specified in the plan.
+
+**Pattern Example:**
+```r
+r <- list()
+
+# Use macros and list storage
+r[["Joint"]] <- feols(
+  gr_1yr ~ share_deps_closed + pred_share_opened + ..controls | ..fe,
+  data = dt_combined, 
+  vcov = ~ZIPBR
+)
+
+# Interaction with heterogeneity macros
+r[["Het Pre 2012"]] <- feols(
+  gr_1yr ~ share_deps_closed*(..het_vars) + pred_share_opened*(..het_vars) + ..controls | ..fe,
+  data = dt_combined[YEAR <= 2012], 
+  vcov = ~ZIPBR
+)
+```
+

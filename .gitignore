@@ -1,0 +1,2 @@
+# Optional local symlinks when linking this repo to itself for testing (scripts/link-ai-vault.ps1)
+.cursor/

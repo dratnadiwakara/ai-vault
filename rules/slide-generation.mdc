@@ -1,0 +1,57 @@
+---
+description: Standards for slide generation in Marp. Invoke explicitly; does not auto-attach.
+alwaysApply: false
+---
+
+<!-- Former scope (invoke when editing these paths): slides/**/*.md, docs/slides/**/*.md -->
+
+## Slide Generation (Marp)
+- **Format:** All slide decks MUST be in **Marp** format (Markdown with Marp frontmatter and `---` slide separators).
+- **Theme:** Use the **default** theme. 
+
+### 1. File Location & Naming
+- Store all slide decks under `docs/slides/`.
+- Name files as `topic_YYYYMMDD.md` (e.g., `branch-closures_20260302.md`).
+
+### Deck Planning Requirements
+- **Plan the deck before creating any slides.** For decks with more than 10 slides or conceptually complex content, first produce a slide-by-slide outline capturing, at minimum: slide title, action title, and exhibit type (e.g., bullets, figure, table, equation).
+- **User confirmation before building.** Do not start generating or editing slides until this outline has been reviewed and explicitly confirmed with the user.
+- **Ghost deck test.** During planning, read only the proposed action titles in sequence. They must tell the complete argument on their own; if they do not, revise the outline (titles and/or ordering) until the narrative is coherent before building the deck.
+
+### 2. Narrative & Argumentation
+- **Action titles, not topic labels.** Every slide title should be a complete sentence stating the takeaway; reading titles alone must tell the whole argument (the ghost deck test).
+- **One argument, made well.** Do not attempt to present the entire paper. Choose the central claim that can be made convincingly in the allotted time; move all other material to the appendix.
+
+### 3. Slide-Level Content
+- **One insight per slide.** Each slide should focus on a single core idea.
+- **One exhibit per slide.** Limit each slide to one chart, table, diagram, equation block, or map. If you think you need two exhibits, decide whether they form a single comparison (combine into one exhibit) or represent two distinct points (which should be separated into different slides).
+- **Highlight the key finding directly on the chart.** Use annotations, labels, or emphasis so the main message is immediately visible without hunting.
+
+### 3a. Every Exhibit Must Earn Its Place
+- The exhibit must directly support the slide’s action title.
+- Test 1 (title only): Cover the exhibit and read the title. If the title still makes complete sense without the exhibit, the exhibit may not be necessary.
+- Test 2 (exhibit only): Cover the title and look only at the exhibit. If the intended takeaway is not obvious, strengthen the annotation or clarify the action title so the connection is unmistakable.
+
+### 3b. Self-Sufficient Slide Test
+- For any slide containing a figure or key result, ask: *Could someone understand the central point of this slide without hearing the narration?* If not, add an annotation, short takeaway sentence, or label so the slide communicates on its own.
+- Assume slides may be shared as a handout or PDF without a presenter attached; each slide should still convey its main message in that context.
+
+### 4. Relationship Between Slides and Speech
+- **Slides support speech; they do not replace it.** Use body text for orientation and structure, not full paragraphs of exposition.
+- The presenter carries the argument; the slides primarily carry the evidence (figures, key equations, and short cues).
+
+### 4a. Figure Placement
+- Place figures on the **left** side of the slide, with interpretive bullets or discussion text on the **right**.
+- This layout should follow the natural left-to-right reading order: evidence first, interpretation second.
+
+### 5. Citations and References
+- **Cite everything borrowed.** Apply academic integrity standards to slides just as to papers.
+- Include in-text citations on any slide that uses external ideas, data, or figures, and provide full references on a dedicated References slide.
+
+### 6. Ending the Deck
+- **End on conclusions.** The final content slide should state the main conclusions and, if relevant, policy or research implications.
+- Keep the conclusions slide visible during Q&A. Do not end on a "Thank You" or blank slide.
+
+### Speaker Notes (Optional but Recommended)
+- Include speaker notes for roadmap, main result, mechanism, and conclusion slides.
+

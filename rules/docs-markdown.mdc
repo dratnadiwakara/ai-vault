@@ -1,0 +1,173 @@
+---
+description: Conventions for markdown documents in docs/ (figures, layout, config). Invoke explicitly; does not auto-attach.
+alwaysApply: false
+---
+
+<!-- Former scope (invoke when editing these paths): docs/**/*.md, docs/**/*.html, docs/_config.yml, docs/_layouts/*.html -->
+
+# Docs Markdown Conventions
+
+## Figures
+
+When including figures in markdown files under `docs/`:
+
+- **Width:** Display images at **600px** wide only.
+- **Aspect ratio:** Preserve aspect ratio (height scales automatically).
+
+Use HTML `<img>` with explicit width and auto height. Do **not** use plain markdown image syntax `![](path)` for figures, because it does not control size.
+
+**Format:**
+
+```html
+<img src="figures/filename.ext" alt="Descriptive alt text" width="600" style="height: auto;" />
+```
+
+**Example:**
+
+```html
+<img src="figures/pct_of_mean_by_regime_03012026.png" alt="Marginal effect as % of mean closure rate by period" width="600" style="height: auto;" />
+```
+
+- `width="600"` sets display width to 600px.
+- `style="height: auto;"` keeps the image proportional.
+
+Apply this to every figure reference you add or edit in `docs/**/*.md`.
+
+---
+
+## AI-written explanations
+
+When you add **interpretive or explanatory paragraphs** in `docs/` that **interpret generated results** (e.g. reconciling regression results with other findings, explaining why a coefficient might be large or change over time, discussing economic mechanisms, or drafting narrative about what the results mean):
+
+1. **Put the content in a box** (bordered block so it is visually distinct).
+2. **Prefix the first line with "AI WRITTEN:"** and style that label in red (see example below).
+
+**When it applies:** Only when the text **interprets** already-generated results—i.e. explains what coefficients or patterns mean, offers possible mechanisms, reconciles different results, or draws implications. It does **not** apply to:
+
+- **Sample construction** (how the sample was built, which units or years are included, restrictions).
+- **Regression specification** (which variables, fixed effects, controls, or standard errors are used).
+- **Design or methodology** (what the outcome variable is, how treatment is defined, identification logic).
+- **Source citations**, table captions, or verbatim quotes from papers or code.
+
+Those are factual/descriptive and do not need the AI WRITTEN box. Reserve the box for **interpretation of results** (e.g. “a possible explanation is…”, “this reconciles with…”, “the coefficient is larger because…”).
+
+**Format:** Use the shared CSS classes from `docs/css/site.css` (included by `default.html`). Do **not** duplicate these styles inline. Use class-based markup:
+
+```html
+<div class="ai-written-box">
+<p><strong class="ai-written-label">AI WRITTEN:</strong> Your explanatory or interpretive text here. For example: the positive coefficient on closures is larger in later subperiods, while deposit reallocation results show incumbents no longer gain—a possible explanation is that closing banks retain deposits at remaining branches…</p>
+</div>
+```
+
+- **Box:** Use `class="ai-written-box"` on the wrapper `div` (styles: border, padding, margin).
+- **Red label:** Use `class="ai-written-label"` on the **AI WRITTEN:** element (e.g. `<strong class="ai-written-label">AI WRITTEN:</strong>`).
+- **Scope:** Use this only when you are **interpreting generated results** (coefficients, patterns, mechanisms, reconciliation). Do not use it for methodology, sample construction, regression specification, design description, verbatim quotes, table captions, or source citations.
+
+---
+
+## Shared CSS classes (do not duplicate inline)
+
+Styles for callout and AI-written boxes live in **`docs/css/site.css`** and are included by `docs/_layouts/default.html`. When adding or editing content in `docs/**/*.md`, use these **classes** instead of inline `style="..."` so styles stay consistent and in one place.
+
+| Class | Use for | Markup |
+|-------|--------|--------|
+| `ai-written-box` | Wrapper for AI-written interpretation paragraphs | `<div class="ai-written-box">` |
+| `ai-written-label` | Red "AI WRITTEN:" prefix inside the box | `<strong class="ai-written-label">AI WRITTEN:</strong>` |
+| `callout-addressed` | Green "Addressed" / response callouts (e.g. referee comment responses) | `<div class="callout-addressed">` |
+
+**Callout-addressed example** (e.g. in response-plan or similar):
+
+```html
+<div class="callout-addressed">
+**✓ Addressed.** Your response text here…
+</div>
+```
+
+Do **not** copy the equivalent inline styles into markdown; use the class so future changes to `site.css` apply everywhere.
+
+---
+
+## Layout and config (Jekyll / GitHub Pages)
+
+The `docs/` site is built with Jekyll. Respect the following when creating or editing docs.
+
+### Ensuring the Jekyll setup exists
+
+**When creating or adding new doc output** (e.g. a new `docs/results/` index, a new `docs/` section, or any page under `docs/` that will be served by GitHub Pages):
+
+1. **Ensure these files exist** before or as part of the work. If any is missing, create it:
+   - **`docs/_config.yml`** — contents as in the "Exact current content" block below.
+   - **`docs/_layouts/default.html`** — contents as in the "Exact current content" block below.
+   - **`docs/css/site.css`** — must define the shared classes `ai-written-box`, `ai-written-label`, `callout-addressed` (and any extra classes used by new pages, e.g. `description` for results index).
+2. **Do not** remove or relocate `_layouts/` or `_config.yml`; Jekyll expects them at the root of the source directory (`docs/`).
+3. **New HTML index or landing pages** under `docs/` (e.g. `docs/results/index.html`) should use the default layout: add YAML front matter `layout: default` and `title: ...`, and put only the body content below the front matter (no full HTML document wrapper).
+
+This keeps the site buildable by GitHub Pages and styles consistent.
+
+### `_config.yml`
+
+- Lives at `docs/_config.yml`. Defines site-wide settings (e.g. `title`, `description`).
+- **Do not** remove or rename required keys. Add or change only specific values (e.g. title/description) unless you intend a structural change.
+- Keep the file valid YAML (no stray colons in values, consistent indentation).
+
+**Exact current content (`docs/_config.yml`):**
+
+```yaml
+title: NRS Branch Closure - 2026
+description: NRS branch closure and opening analysis documentation
+```
+
+### `_layouts/`
+
+- Layout templates live in `docs/_layouts/`. They wrap page content with HTML and shared styles.
+- **Do not** remove or relocate `_layouts/`; Jekyll expects it at the root of the source directory (`docs/`).
+
+### `default.html`
+
+- The default layout is `docs/_layouts/default.html`. It provides the outer HTML, `<head>`, and injects `{{ content }}` where the page body goes.
+- **When adding new docs:** Use front matter `layout: default` so the page uses this layout and the site’s styles/navigation pattern.
+- **When editing the layout:** Preserve the `{{ content }}` tag so page content still appears. Avoid removing or changing the existing `<style>` block unless you are intentionally updating site-wide styles.
+
+**Exact current content (`docs/_layouts/default.html`):**
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title | default: site.title }}</title>
+  <link rel="stylesheet" href="{{ '/css/site.css' | relative_url }}">
+  <!-- Hypothesis -->
+  <script async src="https://hypothes.is/embed.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 1024px; margin: 0 0 0 0; padding: 2rem 1rem; line-height: 1.5; box-sizing: border-box; }
+    h1 { font-size: 1.25rem; color: #333; }
+    h2 { font-size: 1.1rem; margin-top: 1.5rem; }
+    h3 { font-size: 1rem; margin-top: 1rem; }
+    ul { list-style: none; padding: 0; }
+    li { margin-bottom: 1rem; }
+    a { color: #012169; text-decoration: none; font-weight: 600; }
+    a:hover { text-decoration: underline; }
+    .desc { font-size: 0.9rem; color: #555; margin-top: 0.25rem; }
+    p { margin: 0.5rem 0; }
+    pre, code { font-family: ui-monospace, monospace; font-size: 0.9em; background: #f5f5f5; padding: 0.2em 0.4em; border-radius: 3px; }
+    pre { padding: 0.75rem; overflow-x: auto; }
+    pre code { padding: 0; background: none; }
+    blockquote { margin: 0.5rem 0; padding-left: 1rem; border-left: 3px solid #ddd; color: #555; }
+  </style>
+</head>
+<body>
+  {{ content }}
+</body>
+</html>
+```
+
+**Example front matter for a new doc page:**
+
+```yaml
+---
+layout: default
+title: Your Page Title — NRS Branch Closure
+---
+```

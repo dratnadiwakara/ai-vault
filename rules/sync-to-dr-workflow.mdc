@@ -1,0 +1,40 @@
+---
+description: Sync ai-vault rules/skills/agents and AGENTS.md to the dr-workflow template. Invoke explicitly; does not auto-attach.
+alwaysApply: false
+---
+
+# Sync to Template Project (dr-workflow)
+
+This rule applies when working in **ai-vault** or a project linked to it. The template **C:\OneDrive\github\dr-workflow** is the source for new projects. Whenever you add, edit, or delete canonical files under `rules/`, `skills/`, `agents/`, or change `AGENTS.md` / `CLAUDE.md` in **this** vault (or mirror them under `.cursor/` in a linked project), apply the **same changes** to the corresponding paths in the template project.
+
+## Scope
+
+- **Source (ai-vault):** `rules/`, `skills/`, `agents/`, root `AGENTS.md`, `CLAUDE.md`, and (if present) `.cursor/` mirrors created by `scripts/link-ai-vault.ps1`.
+- **Target (template):** `C:\OneDrive\github\dr-workflow` — mirror into `.cursor/rules`, `.cursor/skills`, `.cursor/agents`, and root `AGENTS.md` as in the table below.
+
+## What to do
+
+1. **After editing any file in `rules/`, `skills/`, `agents/`, `AGENTS.md`, or mirrored `.cursor/`:**  
+   Update the corresponding file in `C:\OneDrive\github\dr-workflow` with the same content (or create it if it does not exist).
+
+2. **After adding a new file** under those directories or creating/updating `AGENTS.md`:  
+   Create or update the same file at the matching path under `C:\OneDrive\github\dr-workflow`.
+
+3. **After deleting a file** under those paths or removing content that implies a file no longer exists:  
+   Delete the corresponding file in `C:\OneDrive\github\dr-workflow` if it exists.
+
+## Path mapping
+
+| In ai-vault (canonical)     | In dr-workflow                                      |
+|-----------------------------|-----------------------------------------------------|
+| `agents/*.md`               | `C:\OneDrive\github\dr-workflow\.cursor\agents\`     |
+| `rules/*.mdc`               | `C:\OneDrive\github\dr-workflow\.cursor\rules\`     |
+| `skills/**/*`               | `C:\OneDrive\github\dr-workflow\.cursor\skills\`     |
+| `AGENTS.md`                 | `C:\OneDrive\github\dr-workflow\AGENTS.md`          |
+
+If your working copy only has `.cursor/` symlinks to the vault, sync from the resolved vault paths above.
+
+## When to sync
+
+- Trigger this sync **whenever you finish making changes** to `rules/`, `skills/`, `agents/`, `AGENTS.md`, or mirrored `.cursor/` in this repo.
+- Do not change dr-workflow for edits that only touch other project files (e.g. `code/`, `docs/`, `latex/`).
