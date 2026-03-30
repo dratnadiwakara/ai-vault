@@ -9,7 +9,6 @@
 | `r-code-conventions.mdc` | R, ggplot2, fixest, Quarto structure—**auto** on `*.R`, `*.Rmd`, `*.qmd` |
 | `docs-markdown.mdc` | Jekyll/docs markdown, figures, AI-written boxes |
 | `slide-generation.mdc` | Marp slide decks under `docs/slides/` |
-| `sync-to-dr-workflow.mdc` | Sync vault changes to `dr-workflow` template |
 
 ## Agents (`agents/`)
 
