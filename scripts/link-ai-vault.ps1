@@ -137,8 +137,50 @@ $scaffoldDirs = @(
 )
 
 $cursorIgnoreTemplate = @"
+venv/
+venv/**
+.venv/
+.venv/**
+renv/
+renv/**
+packrat/
+packrat/**
+
 data/
 data/**
+
+related-papers/
+related-papers/**
+
+
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+*.toc
+*.lof
+*.lot
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.nav
+*.snm
+*.vrb
+
+# Data files
+*.parquet
+*.rds
+*.csv
+*.xls
+*.xslx
+
+# R configuration files
+.Rprofile
+.Rhistory
+.RData
+.Rproj.user
+.Rproj
 "@
 
 $claudeIgnoreTemplate = $cursorIgnoreTemplate
@@ -203,11 +245,14 @@ if ($Validate) {
     $v = Get-RulesAutoApplyViolations -RulesDir $rulesDir
 
     $scaffoldErrors = $false
-    foreach ($dirRel in $scaffoldDirs) {
-        $dirAbs = Join-Path $ProjectRoot $dirRel
-        if (-not (Test-Path -LiteralPath $dirAbs -PathType Container)) {
-            Write-Warning "Missing scaffold dir: $dirAbs"
-            $scaffoldErrors = $true
+    $isSelfLink = ($ProjectRoot -ieq $VaultRoot)
+    if (-not $isSelfLink) {
+        foreach ($dirRel in $scaffoldDirs) {
+            $dirAbs = Join-Path $ProjectRoot $dirRel
+            if (-not (Test-Path -LiteralPath $dirAbs -PathType Container)) {
+                Write-Warning "Missing scaffold dir: $dirAbs"
+                $scaffoldErrors = $true
+            }
         }
     }
 
@@ -224,16 +269,18 @@ if ($Validate) {
         '# R configuration files',
         '.Rproj'
     )
-    if (-not (Test-Path -LiteralPath $gitignorePath -PathType Leaf)) {
-        Write-Warning "Missing .gitignore: $gitignorePath"
-        $scaffoldErrors = $true
-    }
-    else {
-        $gitignoreContent = Get-Content -LiteralPath $gitignorePath -Raw
-        foreach ($needle in $gitignoreNeedles) {
-            if ($gitignoreContent -notmatch [regex]::Escape($needle)) {
-                Write-Warning "Unexpected .gitignore content missing: $needle"
-                $scaffoldErrors = $true
+    if (-not $isSelfLink) {
+        if (-not (Test-Path -LiteralPath $gitignorePath -PathType Leaf)) {
+            Write-Warning "Missing .gitignore: $gitignorePath"
+            $scaffoldErrors = $true
+        }
+        else {
+            $gitignoreContent = Get-Content -LiteralPath $gitignorePath -Raw
+            foreach ($needle in $gitignoreNeedles) {
+                if ($gitignoreContent -notmatch [regex]::Escape($needle)) {
+                    Write-Warning "Unexpected .gitignore content missing: $needle"
+                    $scaffoldErrors = $true
+                }
             }
         }
     }
@@ -242,27 +289,31 @@ if ($Validate) {
     $claudeIgnorePath = Join-Path $ProjectRoot '.claudeignore'
     $expectedCursor = (Normalize-EOL $cursorIgnoreTemplate).TrimEnd("`n")
 
-    if (-not (Test-Path -LiteralPath $cursorIgnorePath -PathType Leaf)) {
-        Write-Warning "Missing .cursorignore: $cursorIgnorePath"
-        $scaffoldErrors = $true
-    }
-    else {
-        $gotCursor = (Normalize-EOL (Get-Content -LiteralPath $cursorIgnorePath -Raw)).TrimEnd("`n")
-        if ($gotCursor -ne $expectedCursor) {
-            Write-Warning ".cursorignore does not match expected data-only ignore"
+    if (-not $isSelfLink) {
+        if (-not (Test-Path -LiteralPath $cursorIgnorePath -PathType Leaf)) {
+            Write-Warning "Missing .cursorignore: $cursorIgnorePath"
             $scaffoldErrors = $true
+        }
+        else {
+            $gotCursor = (Normalize-EOL (Get-Content -LiteralPath $cursorIgnorePath -Raw)).TrimEnd("`n")
+            if ($gotCursor -ne $expectedCursor) {
+                Write-Warning ".cursorignore does not match expected ignore template"
+                $scaffoldErrors = $true
+            }
         }
     }
 
-    if (-not (Test-Path -LiteralPath $claudeIgnorePath -PathType Leaf)) {
-        Write-Warning "Missing .claudeignore: $claudeIgnorePath"
-        $scaffoldErrors = $true
-    }
-    else {
-        $gotClaude = (Normalize-EOL (Get-Content -LiteralPath $claudeIgnorePath -Raw)).TrimEnd("`n")
-        if ($gotClaude -ne $expectedCursor) {
-            Write-Warning ".claudeignore does not match expected data-only ignore"
+    if (-not $isSelfLink) {
+        if (-not (Test-Path -LiteralPath $claudeIgnorePath -PathType Leaf)) {
+            Write-Warning "Missing .claudeignore: $claudeIgnorePath"
             $scaffoldErrors = $true
+        }
+        else {
+            $gotClaude = (Normalize-EOL (Get-Content -LiteralPath $claudeIgnorePath -Raw)).TrimEnd("`n")
+            if ($gotClaude -ne $expectedCursor) {
+                Write-Warning ".claudeignore does not match expected ignore template"
+                $scaffoldErrors = $true
+            }
         }
     }
 

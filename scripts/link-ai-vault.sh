@@ -27,8 +27,8 @@ scaffold_dirs=(
   "latex"
 )
 
-expected_cursorignore=$'data/\ndata/**\n'
-expected_claudeignore=$'data/\ndata/**\n'
+expected_cursorignore=$'venv/\nvenv/**\n.venv/\n.venv/**\nrenv/\nrenv/**\npackrat/\npackrat/**\n\ndata/\ndata/**\n\nrelated-papers/\nrelated-papers/**\n\n\n*.aux\n*.log\n*.out\n*.bbl\n*.blg\n*.toc\n*.lof\n*.lot\n*.synctex.gz\n*.fls\n*.fdb_latexmk\n*.nav\n*.snm\n*.vrb\n\n# Data files\n*.parquet\n*.rds\n*.csv\n*.xls\n*.xslx\n\n# R configuration files\n.Rprofile\n.Rhistory\n.RData\n.Rproj.user\n.Rproj\n'
+expected_claudeignore="$expected_cursorignore"
 
 # Embedded .gitignore template (included in-repo; no external fetch)
 gitignore_template=$'related-papers/\narchives/\narchives/**\n\n\n# LaTeX compilation files\npaper_Jan2026.pdf\n*.aux\n*.log\n*.out\n*.bbl\n*.blg\n*.toc\n*.lof\n*.lot\n*.synctex.gz\n*.fls\n*.fdb_latexmk\n*.nav\n*.snm\n*.vrb\n\n# Data files\n*.parquet\n*.rds\n*.csv\n*.xls\n*.xslx\n\n# R configuration files\n.Rprofile\n.Rhistory\n.RData\n.Rproj.user\n.Rproj\n'
@@ -86,48 +86,61 @@ if [[ "$VALIDATE" -eq 1 ]]; then
   fi
 
   scaffoldErrors=0
-  for dir in "${scaffold_dirs[@]}"; do
-    if [[ ! -d "$dir" ]]; then
-      echo "warning: missing scaffold dir: $dir" >&2
-      scaffoldErrors=1
-    fi
-  done
+  is_self_link=0
+  if [[ "$PROJECT_ROOT" == "$VAULT_ROOT" ]]; then
+    is_self_link=1
+  fi
 
-  # Validate ignore files
-  if [[ ! -f ".gitignore" ]]; then
-    echo "warning: missing .gitignore" >&2
-    scaffoldErrors=1
-  else
-    # Basic content checks (avoid having to require exact full file equality)
-    for needle in "related-papers/" "archives/**" "paper_Jan2026.pdf" "*.rds" ".Rproj"; do
-      if ! grep -qF "$needle" ".gitignore"; then
-        echo "warning: .gitignore missing expected content: $needle" >&2
+  if [[ "$is_self_link" -eq 0 ]]; then
+    for dir in "${scaffold_dirs[@]}"; do
+      if [[ ! -d "$dir" ]]; then
+        echo "warning: missing scaffold dir: $dir" >&2
         scaffoldErrors=1
       fi
     done
   fi
 
-  if [[ ! -f ".cursorignore" ]]; then
-    echo "warning: missing .cursorignore" >&2
-    scaffoldErrors=1
-  else
-    got="$(tr -d '\r' < ".cursorignore")"
-    got="${got%$'\n'}"$'\n'
-    if [[ "$got" != "$expected_cursorignore" ]]; then
-      echo "warning: .cursorignore does not match expected data-only ignore" >&2
+  # Validate ignore files
+  if [[ "$is_self_link" -eq 0 ]]; then
+    if [[ ! -f ".gitignore" ]]; then
+      echo "warning: missing .gitignore" >&2
       scaffoldErrors=1
+    else
+      # Basic content checks (avoid having to require exact full file equality)
+      for needle in "related-papers/" "archives/**" "paper_Jan2026.pdf" "*.rds" ".Rproj"; do
+        if ! grep -qF "$needle" ".gitignore"; then
+          echo "warning: .gitignore missing expected content: $needle" >&2
+          scaffoldErrors=1
+        fi
+      done
     fi
   fi
 
-  if [[ ! -f ".claudeignore" ]]; then
-    echo "warning: missing .claudeignore" >&2
-    scaffoldErrors=1
-  else
-    got="$(tr -d '\r' < ".claudeignore")"
-    got="${got%$'\n'}"$'\n'
-    if [[ "$got" != "$expected_claudeignore" ]]; then
-      echo "warning: .claudeignore does not match expected data-only ignore" >&2
+  if [[ "$is_self_link" -eq 0 ]]; then
+    if [[ ! -f ".cursorignore" ]]; then
+      echo "warning: missing .cursorignore" >&2
       scaffoldErrors=1
+    else
+      got="$(tr -d '\r' < ".cursorignore")"
+      got="${got%$'\n'}"$'\n'
+      if [[ "$got" != "$expected_cursorignore" ]]; then
+        echo "warning: .cursorignore does not match expected ignore template" >&2
+        scaffoldErrors=1
+      fi
+    fi
+  fi
+
+  if [[ "$is_self_link" -eq 0 ]]; then
+    if [[ ! -f ".claudeignore" ]]; then
+      echo "warning: missing .claudeignore" >&2
+      scaffoldErrors=1
+    else
+      got="$(tr -d '\r' < ".claudeignore")"
+      got="${got%$'\n'}"$'\n'
+      if [[ "$got" != "$expected_claudeignore" ]]; then
+        echo "warning: .claudeignore does not match expected ignore template" >&2
+        scaffoldErrors=1
+      fi
     fi
   fi
 
