@@ -1,7 +1,21 @@
 # ai-vault
 
-Shared **rules** (Cursor `.mdc`), **skills**, and **agents** for use across projects with Cursor and Claude Code.
+A **Claude Code project template and global command library** for empirical finance research.
 
-- **Usage policy:** Only [`rules/r-code-conventions.mdc`](rules/r-code-conventions.mdc) auto-applies for `*.R` / `*.Rmd` / `*.qmd`. Everything else is **explicit invocation** only—see [VAULT_USAGE.md](VAULT_USAGE.md).
-- **Link a project:** run [`scripts/link-ai-vault.ps1`](scripts/link-ai-vault.ps1) or [`scripts/link-ai-vault.sh`](scripts/link-ai-vault.sh) from the target project root (see script comments).
-- **Index:** [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md).
+- **Initialize a new project:** run `scripts/new-project.ps1` (Windows) or `scripts/new-project.sh` (Mac/Linux) — creates a full paper project with symlinks back to this vault's skills and agents.
+- **Full usage guide:** [VAULT_USAGE.md](VAULT_USAGE.md)
+- **Project context template:** [CLAUDE.md](CLAUDE.md)
+
+## Quick Start
+
+```powershell
+# Windows
+.\scripts\new-project.ps1 -ProjectPath "C:\projects\my-paper"
+```
+
+```bash
+# Mac / Linux
+./scripts/new-project.sh ../my-paper
+```
+
+Then open the new project in Claude Code, fill in `CLAUDE.md`, and start coding.

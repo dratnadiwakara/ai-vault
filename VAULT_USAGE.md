@@ -1,38 +1,94 @@
-# AI Vault usage
+# AI Vault Usage
 
-This repository is the **canonical** store for shared Cursor rules, skills, and agents. Other projects link here via `scripts/link-ai-vault.ps1` (or `.sh`) instead of copying files.
+This repository is a **Claude Code project template and global command library** for empirical finance research. It serves two purposes:
 
-## Auto vs explicit invocation
+1. **Template** — the folder structure mirrors a standard paper project. Run `scripts/new-project.ps1` (or `.sh`) to initialize new projects from this template.
+2. **Command library** — all skills and agents live in `.claude/commands/`. New projects receive symlinks back here so that skills and agents are managed in one place.
 
-| Asset | Behavior |
-|-------|----------|
-| **`rules/r-code-conventions.mdc`** | **Auto-applies** when working on `*.R`, `*.Rmd`, `*.qmd` (Cursor: `alwaysApply: true` + globs). |
-| **All other `rules/*.mdc`** | **Explicit only.** Do not preload; invoke by path or `@` (e.g. `@rules/docs-markdown.mdc`). Globs were removed so they do not auto-attach. |
-| **`skills/*/SKILL.md`** | **Explicit only.** Reference the skill by folder name or path when needed. |
-| **`agents/*.md`** | **Explicit only.** Reference the agent file when delegating a task. |
+## Initializing a New Project
 
-## Layout
-
-- `rules/` — Cursor rule files (`.mdc`)
-- `skills/` — One folder per skill with `SKILL.md`
-- `agents/` — Agent definitions (`.md`)
-
-## Linking a project
-
-On **Windows**, if symlink creation fails (permissions), the script falls back to **directory junctions**, which work for same-drive vault paths without Developer Mode.
-
-From the **target project root** (not inside ai-vault):
+From this vault's root directory (Windows):
 
 ```powershell
-pwsh -File "C:\path\to\ai-vault\scripts\link-ai-vault.ps1" -VaultRoot "C:\path\to\ai-vault"
+.\scripts\new-project.ps1 -ProjectPath "C:\projects\my-paper"
 ```
 
-See [scripts/link-ai-vault.ps1](scripts/link-ai-vault.ps1) for parameters (`-Validate`, `-SkipClaudeMd`, etc.).
+From this vault's root directory (Mac/Linux):
 
-Project initialization: in addition to creating `.cursor/{rules,skills,agents}` links, the script also scaffolds a standard folder structure (e.g., `code/`, `data/`, `docs/`, `latex/`) and writes `.gitignore`, `.cursorignore`, and `.claudeignore` for new/blank projects.
+```bash
+./scripts/new-project.sh ../my-paper
+```
 
-When linking **this** repository to itself (to test symlinks), use `-SkipClaudeMd` so the vault’s root `CLAUDE.md` is not given a duplicate “Linked AI vault” section.
+What the script does:
+1. Creates the full template directory structure in the target project.
+2. Copies template files: `CLAUDE.md`, `.gitignore`, `.claudeignore`, `code/common.R`, `latex/main.tex`, `latex/main.bib`, all section stubs, and memo files.
+3. Creates `<project>/.claude/commands/skills/` as a **symlink** → `<vault>/.claude/commands/skills/`
+4. Creates `<project>/.claude/commands/agents/` as a **symlink** → `<vault>/.claude/commands/agents/`
 
-## Claude Code
+On Windows, if symlink creation fails (requires Developer Mode or elevated prompt), the script falls back to **directory junctions** (`mklink /J`), which work for same-drive paths without special permissions.
 
-Projects that use this vault should have a `CLAUDE.md` (created or updated by the link script) pointing at the vault paths. Load rules/skills/agents **only when the user asks** or when the task clearly requires them—do not paste entire skill bodies into context by default.
+## Symlink Model
+
+```
+my-paper/
+├── CLAUDE.md              ← copied from vault, fill in [PLACEHOLDER]s
+├── .claude/
+│   └── commands/
+│       ├── skills/        → symlink → ai-vault/.claude/commands/skills/
+│       └── agents/        → symlink → ai-vault/.claude/commands/agents/
+├── data/
+├── code/
+├── latex/
+└── ...
+```
+
+All projects share a single set of skills and agents. When you update a skill or agent in the vault, every linked project gets the update automatically — no file copying needed.
+
+## Invoking Skills and Agents
+
+In Claude Code, use slash commands:
+
+```
+/skills/latex-compile
+/skills/write-section intro
+/agents/finance-paper-reviewer latex/main.tex
+/agents/literature-reviewer bank branch closures and credit supply
+```
+
+See `.claude/commands/skills/` and `.claude/commands/agents/` for the full list — Claude Code discovers them automatically.
+
+## After Initialization
+
+1. Open the new project folder in Claude Code.
+2. Edit `CLAUDE.md` — replace all `[PLACEHOLDER]` sections with paper-specific context (identification strategy, key variables, sample description, data sources).
+3. Add raw data to `data/raw/` (this directory is gitignored).
+4. Initialize git: `git init && git add . && git commit -m "Initialize project from ai-vault template"`.
+
+## Vault Structure
+
+```
+ai-vault/
+├── CLAUDE.md                        ← template (also the vault's own CLAUDE.md)
+├── .gitignore / .claudeignore
+├── .claude/
+│   ├── settings.local.json
+│   └── commands/
+│       ├── skills/                  ← 11 skill files
+│       └── agents/                  ← 8 agent files
+├── data/raw/ / data/constructed/    ← gitkeep placeholders
+├── code/
+│   ├── common.R                     ← template stub
+│   ├── sample-construction/
+│   ├── result-generation/
+│   └── archives/
+├── latex/
+│   ├── main.tex / main.bib          ← template stubs
+│   ├── figures/ / tables/ / build/
+│   └── sections/                    ← 8 section subfolders with *_current.tex stubs
+├── docs/slides/ / docs/memos/
+├── related-papers/                  ← gitignored
+├── correspondence/
+└── scripts/
+    ├── new-project.ps1
+    └── new-project.sh
+```

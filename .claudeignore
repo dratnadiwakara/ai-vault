@@ -1,3 +1,11 @@
+# Data (large / binary — keep out of Claude context)
+data/
+related-papers/
+
+# Scratch / archive folders
+_delete/
+archives/
+
 # LaTeX build output
 latex/build/
 *.aux
@@ -19,11 +27,14 @@ latex/build/
 *.dvi
 *.ps
 
-# R artifacts
+# R binary/data artifacts
+*.rds
+*.parquet
+*.csv
+*.feather
+*.RData
 .Rhistory
-.RData
-.Rproj.user/
-*.Rproj
+.Rproj.user
 
 # Python
 .venv/
@@ -34,20 +45,7 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.pkl
 *.egg-info/
 .pytest_cache/
 .ipynb_checkpoints/
-
-# Data (never committed)
-data/
-
-# Downloaded PDFs (large; gitignored)
-related-papers/
-
-# Scratch / archive folders
-_delete/
-archives/
-
-# OS artifacts
-.DS_Store
-Thumbs.db

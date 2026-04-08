@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(rm:*)",
+      "Bash(grep -n \"globs\\\\|alwaysApply\" .claude/commands/skills/*.md .claude/commands/agents/*.md)",
+      "Bash(grep -n \"correspondence\\\\|code/replication\\\\|code/prof-check\\\\|related-papers\\\\|OUTPUT_DIR\\\\|BIB_PATH\\\\|SUMMARY_MD\\\\|CRITIQUE_MD\" .claude/commands/skills/*.md .claude/commands/agents/*.md)",
+      "Bash(sed -i 's|correspondence/bib-validator/|.claude/bib-validator/|g' .claude/commands/skills/bib-validator.md)",
+      "Bash(sed -i 's|correspondence/figure-table-crosscheck/|.claude/figure-table-crosscheck/|g' .claude/commands/skills/figure-table-crosscheck.md)",
+      "Bash(sed -i 's|correspondence/latex-preflight/|.claude/latex-preflight/|g' .claude/commands/skills/latex-preflight-check.md)",
+      "Bash(sed -i 's|correspondence/table-figure-notes_YYYYMMDD\\\\.md|.claude/table-figure-descriptions/table-figure-notes_YYYYMMDD.md|g' .claude/commands/skills/table-figure-descriptions.md)",
+      "Bash(sed -i \"s|under the \\\\`correspondence/\\\\` folder at the project root \\(create the folder if it does not exist yet\\), for example \\\\`correspondence/table-figure-notes_YYYYMMDD\\\\.md\\\\`|under \\\\`.claude/table-figure-descriptions/\\\\` \\(create the folder if it does not exist\\)|g\" .claude/commands/skills/table-figure-descriptions.md)",
+      "Bash(sed -i 's|correspondence/ai-detector/|.claude/ai-detector/|g' .claude/commands/agents/ai-detector.md)",
+      "Bash(sed -i \"s|Audits text for LLM fingerprints and generates a structured report in \\\\`correspondence/ai-detector/\\\\`|Audits text for LLM fingerprints and generates a structured report in \\\\`.claude/ai-detector/\\\\`|g\" .claude/commands/agents/ai-detector.md)",
+      "Bash(sed:*)",
+      "Bash(sed -i 's|\\\\.claude/sanity-check/|.claude/cc/sanity-check/|g' .claude/commands/skills/sanity-check.md)",
+      "Bash(sed -i 's|\\\\.claude/academic-introduction-evaluator/|.claude/cc/academic-introduction-evaluator/|g' .claude/commands/skills/academic-introduction-evaluator.md)",
+      "Bash(sed -i 's|\\\\.claude/bib-validator/|.claude/cc/bib-validator/|g' .claude/commands/skills/bib-validator.md)",
+      "Bash(sed -i 's|\\\\.claude/figure-table-crosscheck/|.claude/cc/figure-table-crosscheck/|g' .claude/commands/skills/figure-table-crosscheck.md)",
+      "Bash(sed -i 's|\\\\.claude/latex-preflight/|.claude/cc/latex-preflight/|g' .claude/commands/skills/latex-preflight-check.md)",
+      "Bash(sed -i 's|\\\\.claude/ai-detector/|.claude/cc/ai-detector/|g' .claude/commands/agents/ai-detector.md)",
+      "Bash(sed -i 's|\\\\.claude/finance-paper-reviewer/|.claude/cc/finance-paper-reviewer/|g' .claude/commands/agents/finance-paper-reviewer.md)",
+      "Bash(sed -i 's|\\\\.claude/harsh-editor/|.claude/cc/harsh-editor/|g' .claude/commands/agents/harsh-editor.md)",
+      "Bash(sed -i 's|\\\\.claude/referee-response-evaluator/|.claude/cc/referee-response-evaluator/|g' .claude/commands/agents/referee-response-evaluator.md)",
+      "Bash(sed -i 's|\\\\.claude/professor-robustness-check/|.claude/cc/professor-robustness-check/|g' .claude/commands/agents/professor-robustness-check.md)"
+    ]
+  }
+}
