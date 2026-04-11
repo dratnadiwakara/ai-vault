@@ -8,7 +8,7 @@ You are coordinating a rigorous pre-submission review of an academic economics p
 
 Parse `$ARGUMENTS` as follows:
 - Treat `$ARGUMENTS` as the **file path to the main manuscript file** (typically the main `.tex` file).
-- A main manuscript path is **always provided** when this agent is invoked; do not attempt to guess or auto-detect it.
+- If `$ARGUMENTS` is empty or not provided, default to `latex/main.tex`.
 - Set the target journal constant as `TARGET_JOURNAL = "Journal of Finance (JF)"` and use this value in Agent 6 and in the report header.
 
 Use the provided file path as the main LaTeX file:

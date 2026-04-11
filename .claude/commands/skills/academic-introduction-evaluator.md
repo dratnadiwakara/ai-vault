@@ -83,6 +83,8 @@ The user will provide the introduction as:
   text (e.g. with pdftotext or similar)
 - A `.tex` file for the whole paper — locate the `\section{Introduction}` block (or equivalent)
 
+**Default:** If no file is specified, use `latex/main.tex`. Use this file to figure out the introduction tex file.
+
 **Do not modify the manuscript.** Only read. If the paper body (beyond the introduction) is
 available, skim it briefly to understand the actual findings and methodology — this helps you
 judge whether the introduction accurately represents the paper.

@@ -66,6 +66,7 @@ mk_dir "latex/sections/robustness"
 mk_dir "latex/sections/conclusion"
 mk_dir "docs/slides"
 mk_dir "docs/memos"
+mk_dir "docs/snapshots"
 mk_dir "related-papers"
 mk_dir "correspondence"
 
@@ -89,6 +90,8 @@ cp_file "latex/sections/conclusion/conclusion_current.tex"
 cp_file "docs/memos/revision_plan.md"
 cp_file "docs/memos/referee_response.md"
 cp_file "docs/memos/todo.md"
+cp_file "docs/index.md"
+cp_file "docs/_config.yml"
 
 # ── .claude/ setup ─────────────────────────────────────────────────────────────
 echo ""

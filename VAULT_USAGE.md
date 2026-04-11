@@ -85,7 +85,12 @@ ai-vault/
 │   ├── main.tex / main.bib          ← template stubs
 │   ├── figures/ / tables/ / build/
 │   └── sections/                    ← 8 section subfolders with *_current.tex stubs
-├── docs/slides/ / docs/memos/
+├── docs/
+│   ├── _config.yml                  ← Jekyll config for GitHub Pages
+│   ├── index.md                     ← snapshot registry (Pages landing page)
+│   ├── snapshots/                   ← versioned result snapshots
+│   ├── slides/
+│   └── memos/
 ├── related-papers/                  ← gitignored
 ├── correspondence/
 └── scripts/

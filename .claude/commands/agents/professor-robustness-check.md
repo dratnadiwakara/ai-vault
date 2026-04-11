@@ -25,7 +25,7 @@ A single target result, such as:
 You must stick to **one target** and design the robustness exercise around it.
 
 ### 1.2 Inputs (user-provided)
-- Path to the **main LaTeX file** or a LaTeX snippet containing the result (e.g. `latex/main.tex`).
+- Path to the **main LaTeX file** or a LaTeX snippet containing the result. Default: `latex/main.tex`. If no file is specified, use `latex/main.tex`.
 - A short description of the **specific result to check**, e.g. "Column (3) of Table 4: effect of branch closures on small business lending".
 
 ---

@@ -56,7 +56,7 @@ For **figures**:
 ### Step 1 — Ingest inputs
 
 The user will provide one of:
-- **Single `.tex` file** containing both the paper body and table/figure environments.
+- **Single `.tex` file** containing both the paper body and table/figure environments. **Default: `latex/main.tex`** — if no file is specified, use `latex/main.tex` and figure out what the body and table/figure environments are.
 - **Two `.tex` files**: a paper file and a separate tables/figures file. The tables file is `\input{}`-ed or `\include{}`-ed into the paper. Read both.
 - Supplementary **code files** in `code/sample-construction/` and `code/result-generation/`. Read these when available — they are the ground truth for variable construction, sample filters, and estimation details.
 

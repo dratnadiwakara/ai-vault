@@ -27,7 +27,9 @@ This skill inserts a complete LaTeX `figure` environment into an existing `.tex`
 When this skill is used, you should obtain (either from the user or from the calling tool):
 
 1. **Target LaTeX file path** (required)  
+   - Default: `latex/main.tex`. If no file is specified, use `latex/main.tex`.
    - Example: `latex/main.tex` or `latex/sections/results/results_current.tex`.
+   - Then figure out what is the file with tables/figures from this file.
 2. **Insertion line number** (required)  
    - The 1‑based line number *before which* the new figure should be inserted.
 3. **Image list** (required)  

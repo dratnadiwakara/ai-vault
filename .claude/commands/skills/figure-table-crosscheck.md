@@ -40,8 +40,7 @@ Do **not** check:
 
 ### Step 1 — Ingest files
 
-Read all provided `.tex` files using `view` or `bash_tool`. If a separate tables file is provided,
-read it in addition to the paper body. Resolve `\input{}` and `\include{}` references if possible.
+Read all provided `.tex` files using `view` or `bash_tool`. **If no file is specified, default to `latex/main.tex`.** If a separate tables file is provided, read it in addition to the paper body. Resolve `\input{}` and `\include{}` references if possible.
 
 Build two internal structures:
 - **Claims list**: every in-text quantitative claim with its surrounding sentence, the table/figure

@@ -92,6 +92,7 @@ New-ProjectDir "latex\sections\robustness"
 New-ProjectDir "latex\sections\conclusion"
 New-ProjectDir "docs\slides"
 New-ProjectDir "docs\memos"
+New-ProjectDir "docs\snapshots"
 New-ProjectDir "related-papers"
 New-ProjectDir "correspondence"
 
@@ -115,6 +116,8 @@ Copy-VaultFile "latex\sections\conclusion\conclusion_current.tex"
 Copy-VaultFile "docs\memos\revision_plan.md"
 Copy-VaultFile "docs\memos\referee_response.md"
 Copy-VaultFile "docs\memos\todo.md"
+Copy-VaultFile "docs\index.md"
+Copy-VaultFile "docs\_config.yml"
 
 # ── .claude/ setup ─────────────────────────────────────────────────────────────
 Write-Host ""
@@ -146,22 +149,23 @@ $projAgents  = Join-Path $commandsDir "agents"
 
 function New-SymlinkOrJunction {
     param([string]$LinkPath, [string]$TargetPath, [string]$Label)
-    if (Test-Path $LinkPath) {
-        Write-Host "[exists]  $Label (skipped)"
-        return
+    if (Test-Path -LiteralPath $LinkPath) {
+        $item = Get-Item -LiteralPath $LinkPath -Force -ErrorAction SilentlyContinue
+        if ($item.LinkType -eq 'SymbolicLink' -or $item.LinkType -eq 'Junction') {
+            Write-Host "[exists]  $Label (skipped)"
+            return
+        }
+        Remove-Item -LiteralPath $LinkPath -Force
     }
     try {
-        # Try symbolic link first (requires Developer Mode or elevated prompt)
-        New-Item -ItemType SymbolicLink -Path $LinkPath -Target $TargetPath -Force | Out-Null
-        Write-Host "[symlink] $Label -> $TargetPath"
+        New-Item -ItemType SymbolicLink -Path $LinkPath -Target $TargetPath -ErrorAction Stop | Out-Null
+        Write-Host "[symlink]  $Label -> $TargetPath"
     } catch {
         try {
-            # Fall back to Junction (works without Developer Mode)
-            & cmd /c mklink /J "$LinkPath" "$TargetPath" | Out-Null
+            New-Item -ItemType Junction -Path $LinkPath -Target $TargetPath -ErrorAction Stop | Out-Null
             Write-Host "[junction] $Label -> $TargetPath"
         } catch {
-            Write-Warning "Could not create symlink or junction for $Label. Link it manually:"
-            Write-Warning "  mklink /J `"$LinkPath`" `"$TargetPath`""
+            Write-Warning "Could not create symlink or junction for ${Label}: $($_.Exception.Message)"
         }
     }
 }
@@ -174,8 +178,8 @@ Write-Host ""
 Write-Host "Done." -ForegroundColor Green
 Write-Host ""
 Write-Host "Next steps:"
-Write-Host "  1. Open $ProjectPath in Claude Code"
-Write-Host "  2. Edit CLAUDE.md — replace all [PLACEHOLDER] sections with paper-specific context"
+Write-Host "  1. Open the project in Claude Code"
+Write-Host "  2. Edit CLAUDE.md - replace all [PLACEHOLDER] sections with paper-specific context"
 Write-Host "  3. Add raw data to data\raw\ (gitignored)"
-Write-Host "  4. Initialize git: cd '$ProjectPath' && git init"
+Write-Host "  4. Initialize git: git init"
 Write-Host ""

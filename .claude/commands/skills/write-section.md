@@ -55,9 +55,13 @@ Before writing any section, Claude Code should collect or confirm:
 #### Introduction
 - **Opening paragraph**: Motivate with a real-world tension, puzzle, or policy question—not a literature survey. The first sentence should make the reader want to keep reading.
 - **Research question**: State it clearly within the first two paragraphs.
-- **Preview of findings**: One paragraph summarizing main results in plain language with approximate magnitudes.
-- **Identification pitch**: One paragraph on why the empirical strategy is credible. Highlight the source of exogenous variation and what it rules out.
-- **Contribution paragraph(s)**: Position relative to 3–5 most closely related papers. Be specific about how this paper differs ("While Smith (2020) studies X in the context of Y, we exploit Z to identify..."). Do not write a mini literature review here.
+- **Preview of findings**: One paragraph summarizing main results in plain language with approximate magnitudes. Keep numbers impressionistic—drop p-values entirely, round sample counts, simplify date ranges. Exact figures in prose signal insecurity; the reader will find precision in the tables.
+- **Identification pitch**: One paragraph on why the empirical strategy is credible. Highlight the source of exogenous variation and what it rules out. When presenting identification threats, state challenges from both sides (e.g., both supply and demand); an argument that only describes one direction will seem incomplete to a careful referee.
+- **Contribution paragraph(s)**: Position relative to 3–5 most closely related papers. Be specific about how this paper differs ("While Smith (2020) studies X in the context of Y, we exploit Z to identify..."). Do not write a mini literature review here. End each contribution paragraph with what you do—not a primacy claim. Avoid "To our knowledge, the first to..."; it invites challenges and sounds defensive. Let the contribution speak for itself.
+- **Mechanism claims**: Distinguish between "we find X" and "X proves Y." When the underlying mechanism is observationally ambiguous, use "consistent with" rather than assertive causal language. Reserve strong mechanistic claims for what the design actually identifies.
+- **Attribution of known problems**: Do not pin general methodological concerns on a single paper, especially old or unpublished work. State well-known problems as issues the literature faces broadly. Weak attribution invites referees to challenge the premise rather than engage with your solution.
+- **Variable naming**: Name variables in the introduction exactly as they appear in the analysis. Do not use a narrower or more specific label than the actual variable—readers will notice the gap when they reach the tables.
+- **Secondary findings**: If a result is not central to the paper's claim, state it in one sentence and move on. Playing up secondary findings dilutes the main message and invites referees to treat them as the main contribution.
 - **Roadmap**: One sentence at the end. ("Section 2 describes the institutional setting. Section 3 presents the data..."). Keep it perfunctory.
 - **Length**: 4–6 pages for a top journal submission.
 

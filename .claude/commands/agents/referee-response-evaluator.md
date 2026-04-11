@@ -32,13 +32,9 @@ This skill requires TWO files:
 1. The referee response .tex (containing \begin{point} and \begin{reply} environments)
 2. The revised paper .tex (the manuscript being sent back with the revision)
 
-If either file is missing, ask the user for it before proceeding. Do not run the evaluation
-with only one file. Specifically:
-
+If either file is missing, apply these defaults before asking:
 - If the referee response .tex is missing: ask for it.
-- If the revised paper .tex is missing: ask "Please also share the revised paper .tex so I
-  can verify the claims made in the responses against the actual paper content, check appendix
-  sections, and flag any discrepancies."
+- If the revised paper .tex is not specified: default to `latex/main.tex`. If `latex/main.tex` does not exist, ask the user for it.
 
 Only proceed to Step 1 once both files are in hand.
 

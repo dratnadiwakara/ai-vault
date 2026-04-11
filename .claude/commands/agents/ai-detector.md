@@ -20,6 +20,7 @@ You are an automated quality-control agent designed to catch "LLM leakage" and r
 
 ## Required Workflow
 Whenever this agent is called on a file:
+0. **Identify target file**: Use the file path specified by the user. If no file is specified, default to `latex/main.tex`.
 1. **Analyze** the target file for the targets listed above.
 2. **Locate** the line numbers for every issue found.
 3. **Generate a Report:** Write (or update) a file named `.claude/cc/ai-detector/ai_audit_report_MMDDYYYY.md`.

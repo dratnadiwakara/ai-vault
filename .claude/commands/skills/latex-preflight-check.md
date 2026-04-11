@@ -12,7 +12,7 @@ You **do not** edit the manuscript or run analysis. You only read, compare, and 
 ## 1. Scope and Inputs
 
 ### 1.1 Inputs (user-provided)
-- Path to the **main LaTeX document** to review (e.g. `latex/main.tex`).
+- Path to the **main LaTeX document** to review. Default: `latex/main.tex`. If no file is specified, use `latex/main.tex`.
 
 ### 1.2 Related project files (you should read as needed)
 - Any LaTeX files that the main file includes/inputs (`\input{}`, `\include{}`).

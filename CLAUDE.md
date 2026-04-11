@@ -15,6 +15,7 @@
 data/raw/                     ← raw source data (never modified)
 data/constructed/             ← intermediate constructed datasets
 code/common.R                 ← shared libraries, paths, global options
+code/approach-[name]/         ← early-stage: one subfolder per analytical approach
 code/sample-construction/     ← plain .R scripts that build analytical samples
 code/result-generation/       ← .qmd documents that generate tables and figures
 code/archives/                ← old scripts (not sourced)
@@ -24,6 +25,9 @@ latex/figures/                ← figure output (.png, .pdf)
 latex/tables/                 ← table output (.tex)
 latex/sections/               ← section .tex files (\input{} from main.tex)
 latex/build/                  ← pdflatex output (gitignored)
+docs/_config.yml              ← Jekyll config for GitHub Pages
+docs/index.md                 ← snapshot registry (GitHub Pages landing page)
+docs/snapshots/               ← versioned result snapshots (one folder per run)
 docs/slides/                  ← presentation files
 docs/memos/                   ← revision plans, referee responses, todo
 related-papers/               ← downloaded PDFs (gitignored)
@@ -44,6 +48,66 @@ scripts/                      ← new-project initialization scripts
 
 ### Data Sources
 [PLACEHOLDER — list raw data sources and their locations in data/raw/]
+
+---
+
+## Early-Stage Workflow
+
+### Code Exploration: Named Approach Subfolders
+
+When the paper direction is not yet settled, keep competing analytical approaches in separate named subfolders directly under `code/`:
+
+```
+code/
+├── approach-a-did/         ← DiD specification explorations
+│   ├── 01_sample_20260401.R
+│   └── 02_main_spec_20260403.R
+├── approach-b-iv/          ← IV alternative
+│   └── 01_first_stage_20260405.R
+├── sample-construction/    ← shared data prep (used by all approaches)
+├── result-generation/      ← promoted scripts for the winning approach
+├── archives/               ← discarded approaches (move here, don't delete)
+└── common.R                ← shared libraries and settings
+```
+
+**Conventions:**
+- Name subfolders `approach-[descriptor]` (e.g., `approach-did`, `approach-iv-shift-share`).
+- Scripts inside follow the same date-suffix convention: `01_desc_20260401.R`.
+- Each approach folder may have its own `common_[slug].R` if it needs settings that differ from `code/common.R`.
+- When an approach is chosen: move its scripts into `code/result-generation/`, archive the rest to `code/archives/`.
+- When an approach is abandoned: move its folder to `code/archives/` — do not delete.
+
+### Result Snapshots
+
+Use `/skills/snapshot-results "slug"` to capture the current `latex/tables/` and `latex/figures/` into a versioned report under `docs/snapshots/`:
+
+```
+docs/snapshots/
+└── 20260409-approach-a-baseline/
+    ├── index.md        ← report with embedded figures and rendered tables
+    ├── figures/        ← copies of latex/figures/*.png and *.pdf
+    └── tables/         ← markdown-rendered versions of latex/tables/*.tex
+```
+
+**When to snapshot:**
+- After completing a meaningful set of results (baseline spec, first pass at robustness).
+- Before changing a specification that will alter existing outputs.
+- When sharing preliminary findings with coauthors.
+
+**Workflow:**
+```
+/skills/snapshot-results "approach-a-baseline"
+# → creates docs/snapshots/20260409-approach-a-baseline/
+# → updates docs/index.md registry
+# → fill in the Summary section in index.md
+# → git add docs/ && git commit && git push
+```
+
+### GitHub Pages (one-time setup)
+
+1. Go to repo **Settings → Pages → Source**: Deploy from a branch → Branch: `main`, Folder: `/docs`.
+2. After the first push to `docs/`, the site is live at `https://[username].github.io/[repo]/`.
+3. The landing page (`docs/index.md`) lists all snapshots. Each snapshot links to its own `index.md` with embedded figures and tables.
 
 ---
 
@@ -115,6 +179,7 @@ Skills and agents live in `.claude/commands/` (symlinked from ai-vault in projec
 Invoke via slash commands in Claude Code:
 
 **Skills:**
+- `/skills/snapshot-results` — snapshot current tables & figures into `docs/snapshots/` for GitHub Pages sharing
 - `/skills/latex-compile` — compile LaTeX to PDF (pdflatex, no latexmk)
 - `/skills/write-section` — write a paper section as a LaTeX file
 - `/skills/latex-preflight-check` — pre-submission QA checklist
@@ -126,6 +191,7 @@ Invoke via slash commands in Claude Code:
 - `/skills/figure-table-crosscheck` — audit in-text numbers against table values
 - `/skills/bib-validator` — validate BibTeX entries against Google Scholar
 - `/skills/sanity-check` — generate R data sanity-check script and report
+- `/skills/pipeline-audit` — retrospective code-simplicity audit: maps every reported result to the code that produces it, identifies dead code and unnecessary complexity, and produces a simplification report
 
 **Agents:**
 - `/agents/finance-paper-reviewer` — full pre-submission review (6 sub-agents in parallel)
