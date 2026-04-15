@@ -116,14 +116,16 @@ docs/snapshots/
 > **IMPORTANT:** Before running any R or Python command, verify these paths are filled in. If either is still a placeholder, stop and ask the user to provide the correct path before proceeding.
 
 ```
-R_EXE      = [PLACEHOLDER — absolute path to Rscript.exe, e.g. C:/Program Files/R/R-4.4.1/bin/Rscript.exe]
-PYTHON_VENV = [PLACEHOLDER — absolute path to the project Python venv, e.g. C:/OneDrive/github/my-project/.venv]
+R_EXE           = [PLACEHOLDER — absolute path to Rscript.exe, e.g. C:/Program Files/R/R-4.4.1/bin/Rscript.exe]
+PYTHON_VENV     = C:/envs/.basic_venv
+PYTHON_VENV_DOCLING = C:/envs/.docling_venv
 ```
 
 **Rules:**
 - Always invoke R via `R_EXE` (e.g., `"$R_EXE" script.R`), never rely on `Rscript` or `R` being on PATH.
 - Always activate the venv before running Python: source `$PYTHON_VENV/Scripts/activate` (Windows) or `$PYTHON_VENV/bin/activate` (Unix), then call `python`.
-- If `R_EXE` or `PYTHON_VENV` is still `[PLACEHOLDER...]`, do **not** attempt to run the script — prompt the user: *"Please set `R_EXE` / `PYTHON_VENV` in CLAUDE.md before I can run this."*
+- **Exception:** When running `related-papers/convert_batch.py`, use `PYTHON_VENV_DOCLING` (`C:/envs/.docling_venv`) instead of `PYTHON_VENV`.
+- If `R_EXE` is still `[PLACEHOLDER...]`, do **not** attempt to run the script — prompt the user: *"Please set `R_EXE` in CLAUDE.md before I can run this."*
 
 ---
 
@@ -211,7 +213,8 @@ Invoke via slash commands in Claude Code:
 
 **Agents:**
 - `/agents/finance-paper-reviewer` — full pre-submission review (6 sub-agents in parallel)
-- `/agents/literature-reviewer` — search, download PDFs, build .bib, write literature review
+- `/agents/literature-downloader` — acquire PDFs and convert to markdown (3 phases: `seed`, `expand`, `finalize`)
+- `/agents/literature-reviewer` — build .bib, summarize papers, write literature review (run after literature-downloader)
 - `/agents/ai-detector` — detect LLM fingerprints and robotic prose
 - `/agents/harsh-editor` — adversarial editorial review of paper vs. code
 - `/agents/professor-robustness-check` — quick robustness replication from raw data
