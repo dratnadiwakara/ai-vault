@@ -58,27 +58,37 @@ For any PDF you download, construct a filename slug:
 
 ## Phase: `seed`
 
-**Goal:** Search the web, download an initial set of PDFs, convert them, and report.
+**Goal:** Bootstrap the candidate list from any existing markdowns, enrich it with web search, download PDFs, convert them, and report.
 
 ### Steps
 
-1. **Web search** for academic papers matching `<topic>`.
-   - Prioritize: peer-reviewed journal articles in economics/finance; NBER, SSRN, arXiv, central bank working papers.
-   - Collect a candidate list (title, authors, year, URL).
+1. **Check for existing markdowns** in `related-papers/mds/`.
+   - List all `*.md` files there. If any exist, read each one and extract:
+     - The paper's own metadata (title, authors, year) from its header or first page.
+     - All references in its `References` / `Bibliography` section (title, authors, year).
+   - Deduplicate across all files. This forms your **seed candidate list**.
+   - Tell the user how many existing markdowns were found and how many unique references were extracted.
 
-2. **Filter to PDF-backed sources.**
+2. **Web search** for academic papers matching `<topic>`, using the seed candidate list as context.
+   - Treat the seed papers and their references as strong signals of the relevant literature — prefer papers that are cited by or thematically close to them.
+   - Also search broadly beyond this starting point: look for highly cited work, recent advances, and papers the seed set may have missed.
+   - Prioritize: peer-reviewed journal articles in economics/finance; NBER, SSRN, arXiv, central bank working papers.
+   - Merge the web-search results with the seed candidate list, deduplicating by title. Collect a unified candidate list (title, authors, year, URL).
+
+3. **Filter to PDF-backed sources.**
    - Prefer final published PDFs; fall back to working paper repositories.
    - Discard candidates with no accessible PDF.
+   - Skip any candidate whose slug already exists in `related-papers/pdfs/` or whose markdown already exists in `related-papers/mds/`.
 
-3. **Download PDFs** into `related-papers/pdfs/` using `curl`:
+4. **Download PDFs** into `related-papers/pdfs/` using `curl`:
    ```bash
    curl -L "<PDF_URL>" -o "related-papers/pdfs/<slug>.pdf"
    ```
    Only download into `related-papers/pdfs/`. Do not write files elsewhere.
 
-4. **Convert** all PDFs using the Conversion Rule above.
+5. **Convert** all new PDFs using the Conversion Rule above.
 
-5. **Write `related-papers/download-report.md`** (create or overwrite):
+6. **Write `related-papers/download-report.md`** (create or overwrite; note the source of each candidate — "existing-md", "reference-from-existing", or "web-search"):
 
    ```markdown
    # Download Report
@@ -89,9 +99,9 @@ For any PDF you download, construct a filename slug:
 
    ## Successfully Downloaded & Converted
 
-   | File | URL | Title | Authors | Year |
-   |------|-----|-------|---------|------|
-   | <slug>.pdf | <url> | <title> | <authors> | <year> |
+   | File | URL | Title | Authors | Year | Source |
+   |------|-----|-------|---------|------|--------|
+   | <slug>.pdf | <url> | <title> | <authors> | <year> | existing-md / reference-from-existing / web-search |
    ...
 
    ## Failed to Download
@@ -107,7 +117,7 @@ For any PDF you download, construct a filename slug:
    ...
    ```
 
-6. **Report to user**: summarise counts (downloaded, converted, failed) and remind them to add missing PDFs manually before running `expand`.
+7. **Report to user**: summarise counts (existing markdowns found, references extracted, downloaded, converted, failed) and remind them to add missing PDFs manually before running `expand`.
 
 ---
 
