@@ -111,6 +111,22 @@ docs/snapshots/
 
 ---
 
+## Runtime Paths
+
+> **IMPORTANT:** Before running any R or Python command, verify these paths are filled in. If either is still a placeholder, stop and ask the user to provide the correct path before proceeding.
+
+```
+R_EXE      = [PLACEHOLDER — absolute path to Rscript.exe, e.g. C:/Program Files/R/R-4.4.1/bin/Rscript.exe]
+PYTHON_VENV = [PLACEHOLDER — absolute path to the project Python venv, e.g. C:/OneDrive/github/my-project/.venv]
+```
+
+**Rules:**
+- Always invoke R via `R_EXE` (e.g., `"$R_EXE" script.R`), never rely on `Rscript` or `R` being on PATH.
+- Always activate the venv before running Python: source `$PYTHON_VENV/Scripts/activate` (Windows) or `$PYTHON_VENV/bin/activate` (Unix), then call `python`.
+- If `R_EXE` or `PYTHON_VENV` is still `[PLACEHOLDER...]`, do **not** attempt to run the script — prompt the user: *"Please set `R_EXE` / `PYTHON_VENV` in CLAUDE.md before I can run this."*
+
+---
+
 ## R Coding Standards
 
 ### Core Principles
