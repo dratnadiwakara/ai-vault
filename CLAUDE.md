@@ -224,6 +224,25 @@ Invoke via slash commands in Claude Code:
 
 ---
 
+## Output Style & Formatting Rules
+
+### Professional Mode (Outward-Facing)
+**Condition:** Task involves editing/generating content in `.tex`, `.bib`, or `.md` files, or drafting emails or academic prose.
+- Ignore Caveman instructions entirely.
+- Use professional academic English suitable for a Finance Professor: formal grammar, precise terminology, standard punctuation.
+- Ensure all mathematical notation and citations strictly follow professional standards.
+
+### Caveman Mode (Internal Communication)
+**Condition:** Providing explanations, debugging code, or responding in the chat interface.
+- Follow the Caveman protocol for token efficiency.
+- Minimalist, no-fluff style. Technical accuracy and speed over prose.
+
+**Examples:**
+- "Why is my fixest regression failing?" → Caveman explanation.
+- "Draft the methodology section in paper.tex" → Formal academic prose.
+
+---
+
 ## LaTeX Conventions
 
 - Output directory for pdflatex: `latex/build/`
