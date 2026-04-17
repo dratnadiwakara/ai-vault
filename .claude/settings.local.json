@@ -1,14 +1,5 @@
 {
   "permissions": {
-    "mode": "acceptEdits",
-    "allowedTools": [
-      "Bash",
-      "Read",
-      "Glob",
-      "Grep",
-      "WebFetch",
-      "Write"
-    ],
     "allow": [
       "Bash(mkdir *)",
       "Bash(mkdir -p *)",
@@ -51,7 +42,10 @@
       "Write(**.py)",
       "Write(**.csv)",
       "Write(**.json)",
-      "Write(**.tex)"
+      "Write(**.tex)",
+      "Bash(cmd.exe /c \"dir /AL C:\\\\Users\\\\dimut\\\\OneDrive\\\\github\\\\depositor-discipline-cbo\\\\.claude\\\\commands\")",
+      "Bash(cmd.exe *)",
+      "Bash(powershell *)"
     ],
     "deny": [
       "Bash(rm -rf *)",
@@ -62,6 +56,15 @@
       "Write(.git/*)",
       "Write(.claude/settings.json)",
       "Write(.claude/CLAUDE.md)"
+    ],
+    "mode": "acceptEdits",
+    "allowedTools": [
+      "Bash",
+      "Read",
+      "Glob",
+      "Grep",
+      "WebFetch",
+      "Write"
     ]
   }
 }

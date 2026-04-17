@@ -38,15 +38,19 @@ scripts/                      ← new-project initialization scripts
 ## Paper-Specific Context
 
 ### Identification Strategy
+
 [PLACEHOLDER — describe the quasi-experimental design, source of variation, and identifying assumption]
 
 ### Key Variables
+
 [PLACEHOLDER — list outcome variables, treatment variables, controls with definitions]
 
 ### Sample
+
 [PLACEHOLDER — unit of observation, time period, data sources, key filters]
 
 ### Data Sources
+
 [PLACEHOLDER — list raw data sources and their locations in data/raw/]
 
 ---
@@ -71,6 +75,7 @@ code/
 ```
 
 **Conventions:**
+
 - Name subfolders `approach-[descriptor]` (e.g., `approach-did`, `approach-iv-shift-share`).
 - Scripts inside follow the same date-suffix convention: `01_desc_20260401.R`.
 - Each approach folder may have its own `common_[slug].R` if it needs settings that differ from `code/common.R`.
@@ -90,11 +95,13 @@ docs/snapshots/
 ```
 
 **When to snapshot:**
+
 - After completing a meaningful set of results (baseline spec, first pass at robustness).
 - Before changing a specification that will alter existing outputs.
 - When sharing preliminary findings with coauthors.
 
 **Workflow:**
+
 ```
 /skills/snapshot-results "approach-a-baseline"
 # → creates docs/snapshots/20260409-approach-a-baseline/
@@ -116,12 +123,13 @@ docs/snapshots/
 > **IMPORTANT:** Before running any R or Python command, verify these paths are filled in. If either is still a placeholder, stop and ask the user to provide the correct path before proceeding.
 
 ```
-R_EXE           = [PLACEHOLDER — absolute path to Rscript.exe, e.g. C:/Program Files/R/R-4.4.1/bin/Rscript.exe]
+R_EXE           = "C:/Program Files/R/R-4.5.3/bin/R.exe"
 PYTHON_VENV     = C:/envs/.basic_venv
 PYTHON_VENV_DOCLING = C:/envs/.docling_venv
 ```
 
 **Rules:**
+
 - Always invoke R via `R_EXE` (e.g., `"$R_EXE" script.R`), never rely on `Rscript` or `R` being on PATH.
 - Always activate the venv before running Python: source `$PYTHON_VENV/Scripts/activate` (Windows) or `$PYTHON_VENV/bin/activate` (Unix), then call `python`.
 - **Exception:** When running `related-papers/convert_batch.py`, use `PYTHON_VENV_DOCLING` (`C:/envs/.docling_venv`) instead of `PYTHON_VENV`.
@@ -141,11 +149,11 @@ PYTHON_VENV_DOCLING = C:/envs/.docling_venv
 
 ### Project Organization
 
-| Folder | Contents |
-|--------|----------|
+| Folder                      | Contents                                                                       |
+| --------------------------- | ------------------------------------------------------------------------------ |
 | `code/sample-construction/` | Plain `.R` scripts that read from `data/raw/` and write to `data/constructed/` |
-| `code/result-generation/` | `.qmd` documents with `type: source` that produce tables and figures |
-| `code/common.R` | Shared libraries, paths, ggplot2 theme, fixest globals |
+| `code/result-generation/`   | `.qmd` documents with `type: source` that produce tables and figures           |
+| `code/common.R`             | Shared libraries, paths, ggplot2 theme, fixest globals                         |
 
 ### Data Management
 
@@ -160,6 +168,7 @@ PYTHON_VENV_DOCLING = C:/envs/.docling_venv
 - Figures → `latex/figures/` as timestamped `.png` files with `bg = "transparent"`.
 - Tables → `latex/tables/` as `.tex` files with matching timestamps.
 - Control exports with logical flags at the top of each script:
+  
   ```r
   save_figures <- TRUE
   save_tables  <- TRUE
@@ -169,13 +178,13 @@ PYTHON_VENV_DOCLING = C:/envs/.docling_venv
 
 Apply `theme_custom()` (defined in `code/common.R`) to all ggplot2 plots. Use these brand colors:
 
-| Name | Hex |
-|------|-----|
-| Primary blue | `"#012169"` |
-| Primary gold | `"#f2a900"` |
-| Accent gray | `"#525252"` |
+| Name           | Hex         |
+| -------------- | ----------- |
+| Primary blue   | `"#012169"` |
+| Primary gold   | `"#f2a900"` |
+| Accent gray    | `"#525252"` |
 | Positive green | `"#15803d"` |
-| Negative red | `"#b91c1c"` |
+| Negative red   | `"#b91c1c"` |
 
 ### Econometric Modeling
 
@@ -197,6 +206,7 @@ Skills and agents live in `.claude/commands/` (symlinked from ai-vault in projec
 Invoke via slash commands in Claude Code:
 
 **Skills:**
+
 - `/skills/snapshot-results` — snapshot current tables & figures into `docs/snapshots/` for GitHub Pages sharing
 - `/skills/latex-compile` — compile LaTeX to PDF (pdflatex, no latexmk)
 - `/skills/write-section` — write a paper section as a LaTeX file
@@ -212,6 +222,7 @@ Invoke via slash commands in Claude Code:
 - `/skills/pipeline-audit` — retrospective code-simplicity audit: maps every reported result to the code that produces it, identifies dead code and unnecessary complexity, and produces a simplification report
 
 **Agents:**
+
 - `/agents/finance-paper-reviewer` — full pre-submission review (6 sub-agents in parallel)
 - `/agents/literature-downloader` — acquire PDFs and convert to markdown (3 phases: `seed`, `expand`, `finalize`)
 - `/agents/literature-reviewer` — build .bib, summarize papers, write literature review (run after literature-downloader)
@@ -227,17 +238,22 @@ Invoke via slash commands in Claude Code:
 ## Output Style & Formatting Rules
 
 ### Professional Mode (Outward-Facing)
+
 **Condition:** Task involves editing/generating content in `.tex`, `.bib`, or `.md` files, or drafting emails or academic prose.
+
 - Ignore Caveman instructions entirely.
 - Use professional academic English suitable for a Finance Professor: formal grammar, precise terminology, standard punctuation.
 - Ensure all mathematical notation and citations strictly follow professional standards.
 
 ### Caveman Mode (Internal Communication)
+
 **Condition:** Providing explanations, debugging code, or responding in the chat interface.
+
 - Follow the Caveman protocol for token efficiency.
 - Minimalist, no-fluff style. Technical accuracy and speed over prose.
 
 **Examples:**
+
 - "Why is my fixest regression failing?" → Caveman explanation.
 - "Draft the methodology section in paper.tex" → Formal academic prose.
 
