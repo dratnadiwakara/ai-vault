@@ -192,6 +192,23 @@ Apply `theme_custom()` (defined in `code/common.R`) to all ggplot2 plots. Use th
 - Define global formula macros with `setFixest_fml()` and global output options with `setFixest_etable()` **once** in `code/common.R`. Reuse them across analysis files — do not redefine per script.
 - Store model results in named lists (e.g., `r <- list(); r$baseline <- feols(...)`).
 
+### Regression Table Footer Rows
+
+Every regression table must include two footer rows below N: **Mean(DV)** and **SD(treatment)**.
+
+- `Mean(DV)`: mean of the dependent variable computed from the exact `data=` subset passed to `feols()` (after all sample filters and `na.omit`), rounded to 3 decimal places.
+- `SD(treatment)`: standard deviation of the key treatment variable (not controls) from the same subset, rounded to 3 decimal places.
+- Use the actual variable name as the label when cleaner (e.g., `Mean(gr\_branch)`, `SD(share\_deps\_closed)`).
+
+Compute inline before calling `feols()`:
+
+```r
+mean_dv  <- round(mean(data$dep_var,     na.rm = TRUE), 3)
+sd_treat <- round(sd(data$treatment_var, na.rm = TRUE), 3)
+```
+
+Add via `etable()` `extralines` argument or append manually to the exported `.tex`. Row order: **N → Mean(DV) → SD(treatment) → Within R²**.
+
 ### Quarto Documents
 
 - Use `type: source` in the Quarto YAML front matter so the document runs as a script without rendering to HTML/PDF.
@@ -221,6 +238,17 @@ plt.show()
 **When to use:** User says "view", "check", "show", "what does X look like", or you are running exploratory one-off code to display a result.
 
 **When NOT to use:** Writing or editing a `.py` script/file. Never embed `plt.show()` table pop-outs inside saved scripts — they are for interactive inspection only.
+
+---
+
+## Session Memory
+
+`NOTES.md` files are written by the `/agents/session-debrief` agent after each work session. They summarize what was done, decisions made, and open threads.
+
+- `NOTES.md` in project root → high-level summary of overall paper progress
+- `NOTES.md` in subfolders (e.g., `code/approach-did/NOTES.md`) → focused notes specific to that directory's work
+
+Read relevant `NOTES.md` at session start to orient quickly. They are a supplement to — not a substitute for — reading code and git history when deeper context is needed.
 
 ---
 
