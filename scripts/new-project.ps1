@@ -118,6 +118,8 @@ Copy-VaultFile "docs\memos\referee_response.md"
 Copy-VaultFile "docs\memos\todo.md"
 Copy-VaultFile "docs\index.md"
 Copy-VaultFile "docs\_config.yml"
+Copy-VaultFile "docs\_layouts\default.html"
+Copy-VaultFile "docs\css\site.css"
 
 # ── .claude/ setup ─────────────────────────────────────────────────────────────
 Write-Host ""

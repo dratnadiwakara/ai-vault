@@ -200,6 +200,30 @@ Apply `theme_custom()` (defined in `code/common.R`) to all ggplot2 plots. Use th
 
 ---
 
+## Python Coding Standards
+
+### Exploratory Display Rule
+
+When executing code inline (e.g. `python -c "..."` or running a scratch snippet to answer "view/check/show me") and the result is a DataFrame with **< 100 rows and < 10 columns**, render it visually using Matplotlib:
+
+```python
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(min(12, max(4, len(df.columns))), min(8, max(2, len(df) * 0.3 + 1))))
+ax.axis('off')
+tbl = ax.table(cellText=df.values, colLabels=df.columns, loc='center', cellLoc='center')
+tbl.auto_set_font_size(True)
+tbl.set_fontsize(10)
+fig.tight_layout()
+plt.show()
+```
+
+**When to use:** User says "view", "check", "show", "what does X look like", or you are running exploratory one-off code to display a result.
+
+**When NOT to use:** Writing or editing a `.py` script/file. Never embed `plt.show()` table pop-outs inside saved scripts — they are for interactive inspection only.
+
+---
+
 ## Skills & Agents
 
 Skills and agents live in `.claude/commands/` (symlinked from ai-vault in project repositories).
