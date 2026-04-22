@@ -15,14 +15,16 @@
 data/raw/                     ← raw source data (never modified)
 data/constructed/             ← intermediate constructed datasets
 code/common.R                 ← shared libraries, paths, global options
-code/approach-[name]/         ← early-stage: one subfolder per analytical approach
+code/approach-[name]-[month-year]/         ← early-stage: one subfolder per analytical approach (e.g. approach-did-march2026)
+code/approach-[name]-[month-year]/tables/  ← intermediate table output (.md only) for this approach
+code/approach-[name]-[month-year]/figures/ ← intermediate figure output (.png, .pdf) for this approach
 code/sample-construction/     ← plain .R scripts that build analytical samples
 code/result-generation/       ← .qmd documents that generate tables and figures
 code/archives/                ← old scripts (not sourced)
-latex/main.tex                ← master LaTeX document
+latex/main.tex                ← master LaTeX document (FINAL STAGE ONLY)
 latex/main.bib                ← BibTeX references
-latex/figures/                ← figure output (.png, .pdf)
-latex/tables/                 ← table output (.tex)
+latex/figures/                ← FINAL figure output — populated only when results are finalized
+latex/tables/                 ← FINAL table output — populated only when results are finalized
 latex/sections/               ← section .tex files (\input{} from main.tex)
 latex/build/                  ← pdflatex output (gitignored)
 docs/_config.yml              ← Jekyll config for GitHub Pages
@@ -63,11 +65,15 @@ When the paper direction is not yet settled, keep competing analytical approache
 
 ```
 code/
-├── approach-a-did/         ← DiD specification explorations
+├── approach-did-april2026/       ← DiD specification explorations
 │   ├── 01_sample_20260401.R
-│   └── 02_main_spec_20260403.R
-├── approach-b-iv/          ← IV alternative
-│   └── 01_first_stage_20260405.R
+│   ├── 02_main_spec_20260403.R
+│   ├── tables/             ← intermediate table output (.md only)
+│   └── figures/            ← intermediate figure output (.png, .pdf)
+├── approach-iv-april2026/        ← IV alternative
+│   ├── 01_first_stage_20260405.R
+│   ├── tables/
+│   └── figures/
 ├── sample-construction/    ← shared data prep (used by all approaches)
 ├── result-generation/      ← promoted scripts for the winning approach
 ├── archives/               ← discarded approaches (move here, don't delete)
@@ -76,45 +82,37 @@ code/
 
 **Conventions:**
 
-- Name subfolders `approach-[descriptor]` (e.g., `approach-did`, `approach-iv-shift-share`).
+- Name subfolders `approach-[descriptor]-[month-year]` where month-year is lowercase (e.g., `approach-did-march2026`, `approach-iv-shift-share-april2026`). The month-year suffix marks when the approach was started and disambiguates re-attempts of the same approach at different points in the project.
 - Scripts inside follow the same date-suffix convention: `01_desc_20260401.R`.
 - Each approach folder may have its own `common_[slug].R` if it needs settings that differ from `code/common.R`.
-- When an approach is chosen: move its scripts into `code/result-generation/`, archive the rest to `code/archives/`.
+- **All intermediate outputs (tables and figures) stay inside the approach subfolder** — write to `code/approach-[name]-[month-year]/tables/` and `code/approach-[name]-[month-year]/figures/`, never to `latex/`.
+- The `latex/` directory is reserved for the final stage only. Do not write anything there until the user explicitly instructs promotion.
+- When an approach is chosen and finalized: copy tables to `latex/tables/` and figures to `latex/figures/`, then move scripts into `code/result-generation/`, archive the rest to `code/archives/`.
 - When an approach is abandoned: move its folder to `code/archives/` — do not delete.
 
 ### Result Snapshots
 
-Use `/skills/snapshot-results "slug"` to capture the current `latex/tables/` and `latex/figures/` into a versioned report under `docs/snapshots/`:
+Use `/skills/snapshot-results "slug"` to capture the current approach's `tables/` and `figures/` into a versioned report under `docs/snapshots/`. The skill looks for outputs in `code/approach-[name]-[month-year]/tables/` and `code/approach-[name]-[month-year]/figures/` — specify the approach folder name as an argument if needed.
 
 ```
 docs/snapshots/
-└── 20260409-approach-a-baseline/
+└── 20260409-approach-did-april2026-baseline/
     ├── index.md        ← report with embedded figures and rendered tables
-    ├── figures/        ← copies of latex/figures/*.png and *.pdf
-    └── tables/         ← markdown-rendered versions of latex/tables/*.tex
+    ├── figures/        ← copies of code/approach-[name]-[month-year]/figures/*.png and *.pdf
+    └── tables/         ← markdown-rendered versions of code/approach-[name]-[month-year]/tables/*.tex
 ```
 
-**When to snapshot:**
-
-- After completing a meaningful set of results (baseline spec, first pass at robustness).
-- Before changing a specification that will alter existing outputs.
-- When sharing preliminary findings with coauthors.
+**When to snapshot:** Only when the user explicitly requests it. Never snapshot automatically.
 
 **Workflow:**
 
 ```
-/skills/snapshot-results "approach-a-baseline"
-# → creates docs/snapshots/20260409-approach-a-baseline/
+/skills/snapshot-results "approach-did-april2026-baseline"
+# → reads from code/approach-did-april2026/tables/ and code/approach-did-april2026/figures/
+# → creates docs/snapshots/20260409-approach-did-april2026-baseline/
 # → updates docs/index.md registry
 # → fill in the Summary section in index.md
-# → git add docs/ && git commit && git push
 ```
-
-### GitHub Pages (one-time setup)
-
-1. Go to repo **Settings → Pages → Source**: Deploy from a branch → Branch: `main`, Folder: `/docs`.
-2. After the first push to `docs/`, the site is live at `https://[username].github.io/[repo]/`.
-3. The landing page (`docs/index.md`) lists all snapshots. Each snapshot links to its own `index.md` with embedded figures and tables.
 
 ---
 
@@ -163,16 +161,43 @@ PYTHON_VENV_DOCLING = C:/envs/.docling_venv
 - Generate timestamped output filenames: `format(Sys.time(), "%Y%m%d_%H%M%S")`.
 - Include a comment in each script indicating which upstream script generated any imported dataset.
 
+### External Data: `empirical-data-construction`
+
+If any script consumes data produced by `C:\Users\dimut\OneDrive\github\empirical-data-construction`:
+
+- **Read the `README.md` files carefully** (root README and the per-dataset README for the specific dataset) before writing code that loads the data. Column names, units, coverage, and caveats live there.
+- **Do not load the `.parquet` files directly.** Query the **DuckDB harmonized views** instead — they apply the canonical joins, filters, and naming conventions.
+- If a harmonized view does not exist for the needed dataset, stop and ask the user before falling back to parquet.
+
 ### Figure & Table Export
 
-- Figures → `latex/figures/` as timestamped `.png` files with `bg = "transparent"`.
-- Tables → `latex/tables/` as `.tex` files with matching timestamps.
+- **During early-stage work (approach subfolders):** write outputs to the approach subfolder:
+  - Figures → `code/approach-[name]-[month-year]/figures/` as `.png` files with `bg = "transparent"`.
+  - Tables → `code/approach-[name]-[month-year]/tables/` as `.md` files only — **no `.tex` during exploration**.
+- **Final stage only (on explicit user instruction):** copy outputs to `latex/figures/` and `latex/tables/` (converting to `.tex` at that point).
+- Never write to `latex/` during exploratory or approach-stage work.
 - Control exports with logical flags at the top of each script:
-  
+
   ```r
   save_figures <- TRUE
   save_tables  <- TRUE
   ```
+
+### Regression Table Markdown Export
+
+For regression tables in approach subfolders, convert `etable()` output to markdown using `simplermarkdown::md_table()`:
+
+```r
+library(simplermarkdown)
+
+# etable() with tex=FALSE returns a data.frame
+et <- etable(m1, m2, tex = FALSE)
+writeLines(md_table(et), paste0(tables_path, "tab_name.md"))
+```
+
+- Always use `tex = FALSE` in `etable()` during exploration to get a data.frame, then pass to `md_table()`.
+- For descriptive stat tables, use `knitr::kable(df, format = "markdown")`.
+- Do **not** save `.tex` regression tables during exploration — markdown only.
 
 ### Visualization Standards
 
@@ -208,6 +233,30 @@ sd_treat <- round(sd(data$treatment_var, na.rm = TRUE), 3)
 ```
 
 Add via `etable()` `extralines` argument or append manually to the exported `.tex`. Row order: **N → Mean(DV) → SD(treatment) → Within R²**.
+
+### Key Results Summary (print after generating regression tables)
+
+After a regression script finishes writing table files, print a concise key-coefficient summary in the chat as a Markdown table. This gives the user a fast overview without having to open each table file.
+
+**Format:**
+
+```
+| Outcome | Coef | SE | Sig | N |
+|---|---|---|---|---|
+| Δ Loans | -0.033 | 0.374 |  | 2,654 |
+| Δ Securities | 0.486 | 0.303 |  | 2,654 |
+| Δ log(A/Emp) | 0.023 | 0.008 | *** | 2,654 |
+| ... | ... | ... | ... | ... |
+```
+
+**Rules:**
+
+- One row per outcome (dependent variable). For multi-column tables in the same table file, list each column as a separate row.
+- Columns: **Outcome**, **Coef** (key endogenous/treatment coefficient, 3 decimals), **SE** (3 decimals), **Sig** (stars: `*` p<0.10, `**` p<0.05, `***` p<0.01; blank if not significant), **N**.
+- Below the table, report the first-stage F-statistic (for IV specifications) and flag any specification change from the prior run (e.g., controls added/removed, sample filter changed).
+- End with one short line (≤25 words) summarizing the overall pattern — not per-coefficient interpretation.
+- Do **not** repeat the full etable output (controls, fixed effects lines, SE type) — that lives in the saved `.md` file.
+- Do **not** print this summary for descriptive-stat tables (Table 1, Table 2 style) — only for regression tables.
 
 ### Quarto Documents
 
