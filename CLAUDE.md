@@ -8,6 +8,7 @@
 **Paper**: [PAPER_TITLE]
 **Slug**: [PAPER_SLUG]
 **Description**: [SHORT_DESCRIPTION]
+**Authorship**: [PLACEHOLDER — `solo` or `coauthored`. Drives first-person voice in writing skills: `solo` → "I" (per Cochrane 2005); `coauthored` → "we". Default if unset: `coauthored`.]
 
 ## Project Layout
 
@@ -321,6 +322,7 @@ Invoke via slash commands in Claude Code:
 - `/skills/bib-validator` — validate BibTeX entries against Google Scholar
 - `/skills/sanity-check` — generate R data sanity-check script and report
 - `/skills/pipeline-audit` — retrospective code-simplicity audit: maps every reported result to the code that produces it, identifies dead code and unnecessary complexity, and produces a simplification report
+- `/skills/cochrane-style-check` — audit a `.tex` file against Cochrane (2005) "Writing Tips for Ph.D. Students"; report under `.claude/cc/cochrane-style-check/`. Reads `**Authorship**` field from this file
 
 **Agents:**
 
