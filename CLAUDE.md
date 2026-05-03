@@ -117,6 +117,12 @@ docs/snapshots/
 
 ---
 
+## API Keys & Secrets
+
+All API keys and credentials stored at `C:\key-variables\key-variables.yaml`. Read from there when any key is needed — do not ask user to provide keys manually.
+
+---
+
 ## Runtime Paths
 
 > **IMPORTANT:** Before running any R or Python command, verify these paths are filled in. If either is still a placeholder, stop and ask the user to provide the correct path before proceeding.
@@ -162,6 +168,24 @@ PYTHON_VENV_DOCLING = C:/envs/.docling_venv
 - Generate timestamped output filenames: `format(Sys.time(), "%Y%m%d_%H%M%S")`.
 - Include a comment in each script indicating which upstream script generated any imported dataset.
 
+### Data Lineage Comments
+
+Every script that reads a prebuilt `.rds` / `.parquet` / `.csv` from `data/` or `data/constructed/` must include a lineage comment block **immediately above** the `readRDS()` / `load_latest()` / `fread()` call. Format:
+
+```r
+# Source: <path to file, with YYYYMMDD placeholder if glob-loaded>
+# Built by:   <path to upstream build script>
+# Contents:   <one- or two-line description of key columns / sample>
+dt <- setDT(load_latest("data", "^zip_tech_sample_\\d{8}\\.rds$"))
+```
+
+Rules:
+
+- Build-script path must be clickable in the IDE (use the repo-relative path, e.g. `code/approach-[name]/sample-construction/B1_xxx.R`).
+- If the file touches external (OneDrive, duckdb) sources, document those too — either inline above the path constant, or in a block above `source()`.
+- When a single `00_common.R` is sourced by many scripts, the top of `00_common.R` should carry a full lineage map listing every consumed dataset and its upstream script.
+- When refactoring a folder (e.g. moving build scripts to a new location), update every lineage comment that references the old path — the comments are load-bearing documentation, not decoration.
+
 ### External Data: `empirical-data-construction`
 
 If any script consumes data produced by `C:\Users\dimut\OneDrive\github\empirical-data-construction`:
@@ -186,19 +210,27 @@ If any script consumes data produced by `C:\Users\dimut\OneDrive\github\empirica
 
 ### Regression Table Markdown Export
 
-For regression tables in approach subfolders, convert `etable()` output to markdown using `simplermarkdown::md_table()`:
+For regression tables in approach subfolders, convert `etable()` output to a true pipe-delimited markdown table via `knitr::kable(format = "pipe")`:
 
 ```r
-library(simplermarkdown)
-
-# etable() with tex=FALSE returns a data.frame
-et <- etable(m1, m2, tex = FALSE)
-writeLines(md_table(et), paste0(tables_path, "tab_name.md"))
+# etable() with tex=FALSE returns a data.frame-like object.  Use a CHARACTER
+# VECTOR for `headers` (one label per column) -- the list-form
+# `headers = list("Early" = 1, ...)` encodes column-spans and produces stray
+# 0/1 rows in the markdown output.
+et <- etable(m1, m2, m3,
+             headers = c("Early", "Mid", "Late"),
+             tex     = FALSE)
+df <- as.data.frame(et, stringsAsFactors = FALSE)
+rownames(df) <- NULL
+md <- knitr::kable(df, format = "pipe", row.names = FALSE)
+writeLines(as.character(md), paste0(tables_path, "tab_name.md"))
 ```
 
-- Always use `tex = FALSE` in `etable()` during exploration to get a data.frame, then pass to `md_table()`.
-- For descriptive stat tables, use `knitr::kable(df, format = "markdown")`.
-- Do **not** save `.tex` regression tables during exploration — markdown only.
+- Always use `tex = FALSE` in `etable()` during exploration.
+- Pass column labels as a **character vector**, not a named list, to avoid span-encoded 1-rows in the output.
+- For descriptive stat tables, use `knitr::kable(df, format = "pipe")`.
+- Do **not** save `.tex` regression tables during exploration -- markdown only.
+- Do not use `capture.output(print(et))` -- it produces space-aligned text that line-wraps when the terminal is narrow and breaks the table into chunks.
 
 ### Visualization Standards
 
@@ -217,6 +249,34 @@ Apply `theme_custom()` (defined in `code/common.R`) to all ggplot2 plots. Use th
 - Use the `fixest` package for all panel regressions.
 - Define global formula macros with `setFixest_fml()` and global output options with `setFixest_etable()` **once** in `code/common.R`. Reuse them across analysis files — do not redefine per script.
 - Store model results in named lists (e.g., `r <- list(); r$baseline <- feols(...)`).
+
+#### Regression Style: Explicit, Not Programmatic
+
+**Never generate regressions inside loops, `lapply`, `purrr::map`, or any other iteration construct.** Each regression must be written out explicitly so the user can highlight and run a single model without executing the entire script.
+
+```r
+# CORRECT — each model is a standalone, runnable line
+r$baseline   <- feols(y ~ x1 + x2 | unit + year, data = df, cluster = ~unit)
+r$controls   <- feols(y ~ x1 + x2 + x3 + x4 | unit + year, data = df, cluster = ~unit)
+r$subsample  <- feols(y ~ x1 + x2 | unit + year, data = df[df$group == 1, ], cluster = ~unit)
+
+# WRONG — hides individual models, cannot run one at a time
+specs <- list(~x1, ~x1+x2, ~x1+x2+x3)
+r <- lapply(specs, function(s) feols(as.formula(paste("y ~", s)), data = df))
+```
+
+This rule applies even when specifications differ only slightly. Repetition is intentional — it makes each model independently readable and executable.
+
+### Winsorization
+
+Winsorize sparingly and document the choice on a per-variable basis.
+
+- **Default cutoffs are 1/99.** Use the 1st and 99th percentiles unless there is a specific reason to deviate (and ask the user before deviating).
+- **Skip bounded variables by default.** Percentages, fractions, ratios with a natural [0, 1] (or [0, 100]) support, and other inherently bounded measures do not require winsorization. Apply it only if the distribution exhibits genuinely extreme values that visibly distort estimates — never as a routine pre-processing step.
+- **Skip variables with a well-behaved distribution.** If the tails are not pathological (no isolated outliers many standard deviations from the mass, no obvious data-entry errors), leave the variable untouched.
+- **Winsorize within period for panel data.** When the variable has meaningful time-series variation, compute the winsorization cutoffs within each period (year, quarter, cycle) rather than pooling across the panel. Pooled winsorization disproportionately clips periods with systematically high or low realizations (e.g., crisis years, rate-hike cycles) and induces spurious mean reversion across time.
+- **Ask when in doubt.** If it is not obvious whether a given variable should be winsorized, or which cutoffs (1/99 vs. 5/95) and grouping (within period, within bank, full panel) apply, stop and ask the user before proceeding. Do not silently winsorize a newly added variable.
+- **Document every winsorization site** with a one-line comment stating the cutoffs and the grouping (e.g., `# winsor 1/99 within YEAR`).
 
 ### Regression Table Footer Rows
 
