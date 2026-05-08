@@ -197,7 +197,7 @@ If any script consumes data produced by `C:\Users\dimut\OneDrive\github\empirica
 ### Figure & Table Export
 
 - **During early-stage work (approach subfolders):** write outputs to the approach subfolder:
-  - Figures → `code/approach-[name]-[month-year]/figures/` as `.png` files with `bg = "transparent"`.
+  - Figures → `code/approach-[name]-[month-year]/figures/` as `.png` files with `bg = "white"`.
   - Tables → `code/approach-[name]-[month-year]/tables/` as `.md` files only — **no `.tex` during exploration**.
 - **Final stage only (on explicit user instruction):** copy outputs to `latex/figures/` and `latex/tables/` (converting to `.tex` at that point).
 - Never write to `latex/` during exploratory or approach-stage work.
@@ -247,25 +247,49 @@ Apply `theme_custom()` (defined in `code/common.R`) to all ggplot2 plots. Use th
 ### Econometric Modeling
 
 - Use the `fixest` package for all panel regressions.
-- Define global formula macros with `setFixest_fml()` and global output options with `setFixest_etable()` **once** in `code/common.R`. Reuse them across analysis files — do not redefine per script.
-- Store model results in named lists (e.g., `r <- list(); r$baseline <- feols(...)`).
+- Define formula macros with `setFixest_fml()` once per script (or in a shared common file). Use `..fc` for controls and `..fe` for fixed effects so formulas don't repeat the same control block and FE spec on every line:
+
+  ```r
+  setFixest_fml(
+    ..fc = ~ log_assets_w + leverage_w + tangibility_w + netincome_assets_w,
+    ..fe = ~ unit + year
+  )
+  feols(y ~ x * z + ..fc | ..fe, data = df, cluster = cl)
+  ```
+- Set global output options with `setFixest_etable()` once.
+- Group a regression set's models in an unnamed `list()` — one block per table:
+
+  ```r
+  c_list <- list(
+    feols(y1 ~ x * z1 + ..fc | ..fe, data = df,             cluster = cl),
+    feols(y1 ~ x * z2 + ..fc | ..fe, data = df,             cluster = cl),
+    feols(y2 ~ x * z1 + ..fc | ..fe, data = df[group == 1], cluster = cl)
+  )
+  etable(c_list, tex = FALSE, headers = headers)
+  ```
 
 #### Regression Style: Explicit, Not Programmatic
 
-**Never generate regressions inside loops, `lapply`, `purrr::map`, or any other iteration construct.** Each regression must be written out explicitly so the user can highlight and run a single model without executing the entire script.
+**Never generate regressions inside loops, `lapply`, `purrr::map`, or any other iteration construct.** Each regression must be written out explicitly so the user can highlight and run a single model without executing the entire script. Each `feols()` call should fit on one line via the `..fc` / `..fe` macros.
 
 ```r
-# CORRECT — each model is a standalone, runnable line
-r$baseline   <- feols(y ~ x1 + x2 | unit + year, data = df, cluster = ~unit)
-r$controls   <- feols(y ~ x1 + x2 + x3 + x4 | unit + year, data = df, cluster = ~unit)
-r$subsample  <- feols(y ~ x1 + x2 | unit + year, data = df[df$group == 1, ], cluster = ~unit)
+# CORRECT — each model is a standalone, runnable line; controls/FE via macros
+c_list <- list(
+  feols(y ~ x1 * z + ..fc | ..fe, data = df,             cluster = cl),
+  feols(y ~ x2 * z + ..fc | ..fe, data = df,             cluster = cl),
+  feols(y ~ x1 * z + ..fc | ..fe, data = df[group == 1], cluster = cl)
+)
 
 # WRONG — hides individual models, cannot run one at a time
 specs <- list(~x1, ~x1+x2, ~x1+x2+x3)
 r <- lapply(specs, function(s) feols(as.formula(paste("y ~", s)), data = df))
+
+# WRONG — repeats controls + FE on every line
+m1 <- feols(y ~ x1 * z + log_assets_w + leverage_w + tangibility_w | unit + year, data = df, cluster = cl)
+m2 <- feols(y ~ x2 * z + log_assets_w + leverage_w + tangibility_w | unit + year, data = df, cluster = cl)
 ```
 
-This rule applies even when specifications differ only slightly. Repetition is intentional — it makes each model independently readable and executable.
+This rule applies even when specifications differ only slightly. Repetition of the *spec* is intentional — it makes each model independently readable and executable. Repetition of *controls and FE* is not; collapse them into `..fc` and `..fe`.
 
 ### Winsorization
 
