@@ -26,16 +26,17 @@ This skill inserts a complete LaTeX `table` environment into an existing `.tex` 
 
 When this skill is used, you should obtain (either from the user or from the calling tool):
 
+0. **`$ARGUMENTS`**: `<track-name>` (required) — the track folder name under `tracks/`, e.g. `did-april2026`. The skill resolves the tables directory to `tracks/<track-name>/latex/tables/` and the default target file to `tracks/<track-name>/latex/main.tex`.
 1. **Target LaTeX file path** (required)  
-   - Default: `latex/main.tex`. If no file is specified, use `latex/main.tex`.
-   - Example: `latex/main.tex` or `latex/sections/results/results_current.tex`.
+   - Default: `tracks/<track>/latex/main.tex`. If no file is specified, use that default.
+   - Example: `tracks/<track>/latex/main.tex` or `tracks/<track>/latex/sections/results/results_current.tex`.
    - Then figure out what is the file with tables/figures from this file.
 2. **Insertion line number** (required)  
    - The 1‑based line number *before which* the new table should be inserted.
 3. **Panel list** (required)  
    - An ordered, non‑empty list where each panel has:
      - `panel_title` (short, LaTeX‑safe; e.g., `"Large Banks"`, `"Small Banks"`).
-     - `table_input_path` (path used inside `\input{...}`, usually under `tables/`; e.g., `"tables/closure_regime_large_20260311"`).
+     - `table_input_path` (path used inside `\input{...}`, relative to the track's `latex/` directory and usually under `tables/`; e.g., `"tables/closure_regime_large_20260311"`).
 4. **Caption text** (required)  
    - Short LaTeX‑safe sentence describing the table, used in `\caption{...}`.
 5. **Label key** (required)  

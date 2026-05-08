@@ -1,7 +1,8 @@
 > **Note:** This is the ai-vault template repository. When initializing a new project,
-> run `scripts/new-project.ps1` (or `.sh`) from this directory.
-> The CLAUDE.md in new projects is copied from this file — remove this note and
-> fill in all [PLACEHOLDER] sections for the specific paper.
+> run `scripts/new-project.ps1` (or `.sh`) from this directory, then create your first
+> track with `scripts/new-track.ps1` (or `.sh`). The CLAUDE.md in new projects is copied
+> from this file — remove this note and fill in all [PLACEHOLDER] sections for the
+> specific paper.
 
 # [PAPER_TITLE] — Project Context
 
@@ -12,22 +13,25 @@
 
 ## Project Layout
 
+A project is organized around one or more **tracks**. Each track is a self-contained analytical sub-project (its own code, data, and full LaTeX paper draft). The project root holds shared assets used across tracks.
+
 ```
-data/raw/                     ← raw source data (never modified)
-data/constructed/             ← intermediate constructed datasets
-code/common.R                 ← shared libraries, paths, global options
-code/approach-[name]-[month-year]/         ← early-stage: one subfolder per analytical approach (e.g. approach-did-march2026)
-code/approach-[name]-[month-year]/tables/  ← intermediate table output (.md only) for this approach
-code/approach-[name]-[month-year]/figures/ ← intermediate figure output (.png, .pdf) for this approach
-code/sample-construction/     ← plain .R scripts that build analytical samples
-code/result-generation/       ← .qmd documents that generate tables and figures
-code/archives/                ← old scripts (not sourced)
-latex/main.tex                ← master LaTeX document (FINAL STAGE ONLY)
-latex/main.bib                ← BibTeX references
-latex/figures/                ← FINAL figure output — populated only when results are finalized
-latex/tables/                 ← FINAL table output — populated only when results are finalized
-latex/sections/               ← section .tex files (\input{} from main.tex)
-latex/build/                  ← pdflatex output (gitignored)
+data/raw/                     ← SHARED raw source data (never modified)
+data/constructed/             ← SHARED constructed datasets used by multiple tracks
+code/common.R                 ← SHARED libraries, paths, ggplot2 theme, fixest globals
+tracks/                       ← container for analytical tracks
+tracks/<descriptor>-<month-year>/         ← one self-contained track (e.g. tracks/did-april2026/)
+tracks/<descriptor>-<month-year>/code/                       ← track-local code
+tracks/<descriptor>-<month-year>/code/sample-construction/   ← .R scripts that build track samples
+tracks/<descriptor>-<month-year>/code/result-generation/     ← .qmd analyses producing tables and figures
+tracks/<descriptor>-<month-year>/code/archives/              ← old scripts (not sourced)
+tracks/<descriptor>-<month-year>/data/                       ← track-specific intermediate datasets
+tracks/<descriptor>-<month-year>/latex/main.tex              ← full paper draft for this track
+tracks/<descriptor>-<month-year>/latex/main.bib              ← BibTeX references
+tracks/<descriptor>-<month-year>/latex/sections/             ← section .tex files (\input{} from main.tex)
+tracks/<descriptor>-<month-year>/latex/figures/              ← figures emitted by this track's scripts
+tracks/<descriptor>-<month-year>/latex/tables/               ← tables emitted by this track's scripts
+tracks/<descriptor>-<month-year>/latex/build/                ← pdflatex output (gitignored)
 docs/_config.yml              ← Jekyll config for GitHub Pages
 docs/index.md                 ← snapshot registry (GitHub Pages landing page)
 docs/snapshots/               ← versioned result snapshots (one folder per run)
@@ -35,8 +39,18 @@ docs/slides/                  ← presentation files
 docs/memos/                   ← revision plans, referee responses, todo
 related-papers/               ← downloaded PDFs (gitignored)
 correspondence/               ← agent-generated reports and reviews
-scripts/                      ← new-project initialization scripts
+scripts/                      ← new-project + new-track initialization scripts
 ```
+
+**Create a new track:**
+
+```
+# from the ai-vault directory
+.\scripts\new-track.ps1 -ProjectPath <project-path> -TrackName <descriptor>
+# or:  ./scripts/new-track.sh <project-path> <descriptor>
+```
+
+The script appends the current month-year automatically, so `did` becomes `tracks/did-april2026/`.
 
 ## Paper-Specific Context
 
@@ -58,49 +72,30 @@ scripts/                      ← new-project initialization scripts
 
 ---
 
-## Early-Stage Workflow
+## Tracks: Self-Contained Analytical Sub-Projects
 
-### Code Exploration: Named Approach Subfolders
-
-When the paper direction is not yet settled, keep competing analytical approaches in separate named subfolders directly under `code/`:
-
-```
-code/
-├── approach-did-april2026/       ← DiD specification explorations
-│   ├── 01_sample_20260401.R
-│   ├── 02_main_spec_20260403.R
-│   ├── tables/             ← intermediate table output (.md only)
-│   └── figures/            ← intermediate figure output (.png, .pdf)
-├── approach-iv-april2026/        ← IV alternative
-│   ├── 01_first_stage_20260405.R
-│   ├── tables/
-│   └── figures/
-├── sample-construction/    ← shared data prep (used by all approaches)
-├── result-generation/      ← promoted scripts for the winning approach
-├── archives/               ← discarded approaches (move here, don't delete)
-└── common.R                ← shared libraries and settings
-```
+A track is a complete, self-contained attempt at the paper: its own data prep, its own analyses, and its own LaTeX draft. Multiple tracks can coexist in `tracks/` and run in parallel — useful when comparing competing identification strategies (DiD vs. IV) or before settling on one main specification.
 
 **Conventions:**
 
-- Name subfolders `approach-[descriptor]-[month-year]` where month-year is lowercase (e.g., `approach-did-march2026`, `approach-iv-shift-share-april2026`). The month-year suffix marks when the approach was started and disambiguates re-attempts of the same approach at different points in the project.
-- Scripts inside follow the same date-suffix convention: `01_desc_20260401.R`.
-- Each approach folder may have its own `common_[slug].R` if it needs settings that differ from `code/common.R`.
-- **All intermediate outputs (tables and figures) stay inside the approach subfolder** — write to `code/approach-[name]-[month-year]/tables/` and `code/approach-[name]-[month-year]/figures/`, never to `latex/`.
-- The `latex/` directory is reserved for the final stage only. Do not write anything there until the user explicitly instructs promotion.
-- When an approach is chosen and finalized: copy tables to `latex/tables/` and figures to `latex/figures/`, then move scripts into `code/result-generation/`, archive the rest to `code/archives/`.
-- When an approach is abandoned: move its folder to `code/archives/` — do not delete.
+- Track folder name is `<descriptor>-<month-year>` where month-year is lowercase (e.g., `did-april2026`, `iv-shift-share-may2026`). The month-year suffix marks when the track was started and disambiguates re-attempts.
+- Scripts inside follow the date-suffix convention: `01_desc_20260401.R`.
+- Each track may add `code/common_<slug>.R` for track-specific settings that augment the shared `code/common.R` at project root.
+- **A track owns its outputs end-to-end.** Tables and figures are written directly to `tracks/<name>/latex/tables/` and `tracks/<name>/latex/figures/` (no separate "exploration vs. final" stage — the track's `latex/` is the live paper draft).
+- Shared data lives at `data/raw/` and `data/constructed/` (project root). Track-specific intermediates that are not useful elsewhere go to `tracks/<name>/data/`.
+- When a track is abandoned, move it to `tracks/.archived/` rather than deleting.
+- Skills that operate on a paper (snapshot, latex-compile, write-section, figure-inserter, cochrane-style-check, etc.) require the **track name as their first argument** so they target the right folder.
 
 ### Result Snapshots
 
-Use `/skills/snapshot-results "slug"` to capture the current approach's `tables/` and `figures/` into a versioned report under `docs/snapshots/`. The skill looks for outputs in `code/approach-[name]-[month-year]/tables/` and `code/approach-[name]-[month-year]/figures/` — specify the approach folder name as an argument if needed.
+Use `/skills/snapshot-results <track-name> [label]` to capture a track's tables and figures into a versioned report under `docs/snapshots/`. The skill reads from `tracks/<track-name>/latex/tables/` and `tracks/<track-name>/latex/figures/` and writes to `docs/snapshots/<date>-<track-name>-<label>/`.
 
 ```
 docs/snapshots/
-└── 20260409-approach-did-april2026-baseline/
+└── 20260409-did-april2026-baseline/
     ├── index.md        ← report with embedded figures and rendered tables
-    ├── figures/        ← copies of code/approach-[name]-[month-year]/figures/*.png and *.pdf
-    └── tables/         ← markdown-rendered versions of code/approach-[name]-[month-year]/tables/*.tex
+    ├── figures/        ← copies of tracks/did-april2026/latex/figures/*.png and *.pdf
+    └── tables/         ← markdown-rendered versions of tracks/did-april2026/latex/tables/*.tex
 ```
 
 **When to snapshot:** Only when the user explicitly requests it. Never snapshot automatically.
@@ -108,9 +103,9 @@ docs/snapshots/
 **Workflow:**
 
 ```
-/skills/snapshot-results "approach-did-april2026-baseline"
-# → reads from code/approach-did-april2026/tables/ and code/approach-did-april2026/figures/
-# → creates docs/snapshots/20260409-approach-did-april2026-baseline/
+/skills/snapshot-results did-april2026 baseline
+# → reads from tracks/did-april2026/latex/tables/ and tracks/did-april2026/latex/figures/
+# → creates docs/snapshots/20260409-did-april2026-baseline/
 # → updates docs/index.md registry
 # → fill in the Summary section in index.md
 ```
@@ -154,17 +149,19 @@ PYTHON_VENV_DOCLING = C:/envs/.docling_venv
 
 ### Project Organization
 
-| Folder                      | Contents                                                                       |
-| --------------------------- | ------------------------------------------------------------------------------ |
-| `code/sample-construction/` | Plain `.R` scripts that read from `data/raw/` and write to `data/constructed/` |
-| `code/result-generation/`   | `.qmd` documents with `type: source` that produce tables and figures           |
-| `code/common.R`             | Shared libraries, paths, ggplot2 theme, fixest globals                         |
+| Folder                                              | Contents                                                                                                                |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `code/common.R` (project root)                      | Shared libraries, paths, ggplot2 theme, fixest globals — sourced by all tracks                                          |
+| `tracks/<name>/code/sample-construction/`           | Plain `.R` scripts that read from `data/raw/` and write to `data/constructed/` (shared) or `tracks/<name>/data/` (local) |
+| `tracks/<name>/code/result-generation/`             | `.qmd` documents with `type: source` that produce this track's tables and figures                                       |
+| `tracks/<name>/code/common_<slug>.R` (optional)     | Track-specific settings layered on top of the shared `code/common.R`                                                    |
 
 ### Data Management
 
-- Raw data lives in `data/raw/` and is **never modified**.
-- Processed/constructed datasets go to `data/constructed/`.
-- Define `data_path <- "data/constructed/"` near the top of each analysis script.
+- Raw data lives in `data/raw/` (project root) and is **never modified**. Shared across all tracks.
+- Cross-track constructed datasets go to `data/constructed/` (project root).
+- Track-specific intermediate datasets that are not reused elsewhere go to `tracks/<name>/data/`.
+- Define a `data_path` constant near the top of each analysis script — typically `data_path <- here::here("data", "constructed")` for shared, or `here::here("tracks", "<name>", "data")` for track-local.
 - Generate timestamped output filenames: `format(Sys.time(), "%Y%m%d_%H%M%S")`.
 - Include a comment in each script indicating which upstream script generated any imported dataset.
 
@@ -181,7 +178,7 @@ dt <- setDT(load_latest("data", "^zip_tech_sample_\\d{8}\\.rds$"))
 
 Rules:
 
-- Build-script path must be clickable in the IDE (use the repo-relative path, e.g. `code/approach-[name]/sample-construction/B1_xxx.R`).
+- Build-script path must be clickable in the IDE (use the repo-relative path, e.g. `tracks/<name>/code/sample-construction/B1_xxx.R`, or `code/sample-construction/...` only if the script genuinely lives at project root).
 - If the file touches external (OneDrive, duckdb) sources, document those too — either inline above the path constant, or in a block above `source()`.
 - When a single `00_common.R` is sourced by many scripts, the top of `00_common.R` should carry a full lineage map listing every consumed dataset and its upstream script.
 - When refactoring a folder (e.g. moving build scripts to a new location), update every lineage comment that references the old path — the comments are load-bearing documentation, not decoration.
@@ -196,11 +193,10 @@ If any script consumes data produced by `C:\Users\dimut\OneDrive\github\empirica
 
 ### Figure & Table Export
 
-- **During early-stage work (approach subfolders):** write outputs to the approach subfolder:
-  - Figures → `code/approach-[name]-[month-year]/figures/` as `.png` files with `bg = "white"`.
-  - Tables → `code/approach-[name]-[month-year]/tables/` as `.md` files only — **no `.tex` during exploration**.
-- **Final stage only (on explicit user instruction):** copy outputs to `latex/figures/` and `latex/tables/` (converting to `.tex` at that point).
-- Never write to `latex/` during exploratory or approach-stage work.
+- Each track owns its outputs end-to-end. Write directly to the track's LaTeX folders:
+  - Figures → `tracks/<name>/latex/figures/` as `.png` files with `bg = "white"` (and `.pdf` once finalized).
+  - Tables → `tracks/<name>/latex/tables/`. During active iteration, write a `.md` companion alongside the `.tex` so the user can scan results in chat without compiling LaTeX.
+- Never write outputs into another track's folder. If a result is genuinely shared (e.g., a descriptive table over the full sample used in multiple tracks), put it in the track that owns the prose and `\input{}` it from other tracks via a relative path.
 - Control exports with logical flags at the top of each script:
 
   ```r
@@ -210,7 +206,7 @@ If any script consumes data produced by `C:\Users\dimut\OneDrive\github\empirica
 
 ### Regression Table Markdown Export
 
-For regression tables in approach subfolders, convert `etable()` output to a true pipe-delimited markdown table via `knitr::kable(format = "pipe")`:
+For regression tables emitted from a track's `code/result-generation/`, convert `etable()` output to a true pipe-delimited markdown table via `knitr::kable(format = "pipe")` and write it alongside the `.tex` file:
 
 ```r
 # etable() with tex=FALSE returns a data.frame-like object.  Use a CHARACTER
@@ -226,10 +222,9 @@ md <- knitr::kable(df, format = "pipe", row.names = FALSE)
 writeLines(as.character(md), paste0(tables_path, "tab_name.md"))
 ```
 
-- Always use `tex = FALSE` in `etable()` during exploration.
 - Pass column labels as a **character vector**, not a named list, to avoid span-encoded 1-rows in the output.
 - For descriptive stat tables, use `knitr::kable(df, format = "pipe")`.
-- Do **not** save `.tex` regression tables during exploration -- markdown only.
+- Always emit the `.md` companion file in addition to the `.tex` so the user can read the table in chat without compiling LaTeX.
 - Do not use `capture.output(print(et))` -- it produces space-aligned text that line-wraps when the terminal is narrow and breaks the table into chunks.
 
 ### Visualization Standards
@@ -380,7 +375,7 @@ plt.show()
 `NOTES.md` files are written by the `/agents/session-debrief` agent after each work session. They summarize what was done, decisions made, and open threads.
 
 - `NOTES.md` in project root → high-level summary of overall paper progress
-- `NOTES.md` in subfolders (e.g., `code/approach-did/NOTES.md`) → focused notes specific to that directory's work
+- `NOTES.md` per track (e.g., `tracks/did-april2026/NOTES.md`) → focused notes specific to that track's work
 
 Read relevant `NOTES.md` at session start to orient quickly. They are a supplement to — not a substitute for — reading code and git history when deeper context is needed.
 
@@ -389,7 +384,9 @@ Read relevant `NOTES.md` at session start to orient quickly. They are a suppleme
 ## Skills & Agents
 
 Skills and agents live in `.claude/commands/` (symlinked from ai-vault in project repositories).
-Invoke via slash commands in Claude Code:
+Invoke via slash commands in Claude Code.
+
+**Track argument convention:** Skills that operate on a paper draft, code base, or per-track results take the track name (e.g., `did-april2026`) as their first argument. Skills that operate at project level (literature management, etc.) do not. Each skill's instructions list the exact form.
 
 **Skills:**
 
@@ -448,9 +445,11 @@ Invoke via slash commands in Claude Code:
 
 ## LaTeX Conventions
 
-- Output directory for pdflatex: `latex/build/`
-- Figures referenced as `\includegraphics{figures/filename}` (graphicspath set in `latex/main.tex`)
-- Tables `\input{}`-ed from `latex/tables/` or inline in section files
-- Section files: `latex/sections/<section>/<section>_current.tex` (`\input{}`-ed from `main.tex`)
-- Never edit `latex/build/` contents directly
-- Compile sequence: `pdflatex → bibtex → pdflatex → pdflatex` (all run from `latex/` directory)
+All paths below are **relative to the active track's `latex/` folder** (i.e. `tracks/<name>/latex/`).
+
+- Output directory for pdflatex: `tracks/<name>/latex/build/`
+- Figures referenced as `\includegraphics{figures/filename}` (graphicspath set in the track's `main.tex`)
+- Tables `\input{}`-ed from `tables/` or inline in section files
+- Section files: `sections/<section>/<section>_current.tex` (`\input{}`-ed from `main.tex`)
+- Never edit `build/` contents directly
+- Compile sequence: `pdflatex → bibtex → pdflatex → pdflatex` (all run from the track's `latex/` directory)

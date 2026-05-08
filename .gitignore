@@ -1,5 +1,5 @@
-# LaTeX build output
-latex/build/
+# LaTeX build output (root or per-track)
+**/latex/build/
 *.aux
 *.log
 *.out
@@ -38,8 +38,9 @@ __pycache__/
 .pytest_cache/
 .ipynb_checkpoints/
 
-# Data (never committed)
-data/
+# Data (never committed) — root data/ and per-track tracks/<name>/data/
+/data/
+tracks/*/data/
 
 # Downloaded PDFs (large; gitignored)
 related-papers/
